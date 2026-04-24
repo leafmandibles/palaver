@@ -1,4 +1,5 @@
 import { createOpencodeClient } from '@opencode-ai/sdk/client';
+import { push } from 'svelte-spa-router';
 
 export class SessionController {
   client = createOpencodeClient({ baseUrl: '/opencode' });
@@ -257,6 +258,28 @@ export class SessionController {
     } catch (e) {
       console.error(`[SessionController::updateTitle] - exception:`, e);
       return false;
+    }
+  }
+
+  async forkSession(sessionId, messageId) {
+    console.log(`[SessionController::forkSession] - forking session ${sessionId} at message ${messageId}`);
+    try {
+      const res = await this.client.session.fork({
+        path: { id: sessionId },
+        body: { messageID: messageId }
+      });
+      if (res.error) {
+        console.error(`[SessionController::forkSession] - error:`, res.error);
+        this.error = typeof res.error === 'string' ? res.error : (res.error.message || JSON.stringify(res.error));
+        return;
+      }
+      if (res.data && res.data.id) {
+        console.log(`[SessionController::forkSession] - forked to new session ${res.data.id}`);
+        push(`/session/${res.data.id}`);
+      }
+    } catch (err) {
+      console.error(`[SessionController::forkSession] - exception:`, err);
+      this.error = err.message || 'Failed to fork session.';
     }
   }
 

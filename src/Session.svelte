@@ -124,6 +124,24 @@
       currentMode = ctrl.modes[nextIndex];
     }
   }
+
+  function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
+    return String(num);
+  }
+
+  let currentModelData = $derived(ctrl.models.find(m => m.id === currentModel));
+  let modelCost = $derived(() => {
+    if (!currentModelData) return null;
+    const cost = currentModelData.cost;
+    const limit = currentModelData.limit;
+    return {
+      context: limit?.context ? formatNumber(limit.context) : null,
+      input: cost?.input ?? null,
+      output: cost?.output ?? null
+    };
+  });
 </script>
 
 <div class="session-container">
@@ -168,7 +186,7 @@
           {#if message.info?.role === 'user' || message.info?.type === 'UserMessage' || message.info?.role === 'UserMessage'}
             <UserMessage parts={message.parts || []} />
           {:else}
-            <AssistantMessage parts={message.parts || []} />
+            <AssistantMessage parts={message.parts || []} onFork={() => ctrl.forkSession(params.session_id, message.id)} />
           {/if}
         {/each}
       {:else}
@@ -200,14 +218,15 @@
         onClose={() => showModelSelector = false}
       />
     {/if}
-    <ChatInput 
-      onsend={handleSendMessage} 
+    <ChatInput
+      onsend={handleSendMessage}
       mode={currentMode}
       modelName={ctrl.models.find(m => m.id === currentModel)?.name || currentModel}
       provider={ctrl.providers.find(p => p.id === currentProvider)?.name || currentProvider}
       onSelectorClick={handleSelectorClick}
       onCycleMode={handleCycleMode}
       error={ctrl.sendError}
+      modelCost={modelCost()}
     />
   </div>
 </div>

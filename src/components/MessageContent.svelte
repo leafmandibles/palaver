@@ -48,7 +48,7 @@
 </script>
 
 <script>
-  let { content = '' } = $props();
+  let { content = '', onFork = undefined } = $props();
 
   let html = $state('');
 
@@ -107,6 +107,11 @@
     <button class="copy-response-btn" aria-label="Copy response" title="Copy response" onclick={copyResponse}>
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
     </button>
+    {#if onFork}
+      <button class="fork-btn" aria-label="Fork chat from here" title="Fork chat from here" onclick={onFork}>
+        [fork]
+      </button>
+    {/if}
   </div>
 </div>
 
@@ -137,6 +142,27 @@
   }
   
   .copy-response-btn:hover {
+    color: #374151;
+    background-color: #f3f4f6;
+  }
+
+  .fork-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: inherit;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, background-color 0.2s;
+  }
+
+  .fork-btn:hover {
     color: #374151;
     background-color: #f3f4f6;
   }

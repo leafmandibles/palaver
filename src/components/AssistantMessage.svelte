@@ -2,7 +2,7 @@
   import { getContext } from 'svelte';
   import PartRenderer from './PartRenderer.svelte';
   
-  let { parts = [] } = $props();
+  let { parts = [], onFork = undefined } = $props();
   const showDetails = getContext('showDetails');
 
   let hasVisibleParts = $derived(() => {
@@ -15,7 +15,7 @@
   <div class="message assistant-message">
     <div class="content">
       {#each parts as part}
-        <PartRenderer {part} />
+        <PartRenderer {part} {onFork} />
       {/each}
     </div>
   </div>

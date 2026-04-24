@@ -1,11 +1,11 @@
 <script>
   import MessageContent from '../MessageContent.svelte';
 
-  let { part } = $props();
+  let { part, onFork = undefined } = $props();
 </script>
 
 <div class="text-part">
-  <MessageContent content={part.text || part.content || ''} />
+  <MessageContent content={part.text || part.content || ''} {onFork} />
 </div>
 
 <style>

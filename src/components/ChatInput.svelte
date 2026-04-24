@@ -2,7 +2,7 @@
   let text = $state('');
   let pendingAttachments = $state([]);
   
-  let { onsend, mode = "Plan", modelName = "Gemini 3.1 Pro Preview Custom Tools", provider = "OpenRouter", onSelectorClick, error = null } = $props();
+  let { onsend, mode = "Plan", modelName = "Gemini 3.1 Pro Preview Custom Tools", provider = "OpenRouter", onSelectorClick, error = null, modelCost = null } = $props();
 
   function handleKeydown(event) {
     if (event.key === 'Enter') {
@@ -115,6 +115,17 @@
       </div>
     </div>
   </div>
+  {#if modelCost}
+    <div class="cost-summary">
+      {#if modelCost.context}
+        <span class="cost-item">{modelCost.context}</span>
+      {/if}
+      {#if modelCost.input !== undefined && modelCost.output !== undefined}
+        <span class="cost-separator">·</span>
+        <span class="cost-item">${modelCost.input} / ${modelCost.output}</span>
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -295,5 +306,25 @@
     color: #9ca3af;
     margin-left: 0.1rem;
     margin-top: 0.1rem;
+  }
+
+  .cost-summary {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    padding: 0 0.5rem;
+    margin-top: -0.25rem;
+  }
+
+  .cost-separator {
+    color: #d1d5db;
+  }
+
+  .cost-item {
+    white-space: nowrap;
   }
 </style>

@@ -5,7 +5,7 @@
   import FilePart from './parts/FilePart.svelte';
   import CollapsiblePart from './CollapsiblePart.svelte';
   
-  let { part } = $props();
+  let { part, onFork = undefined } = $props();
   
   const showDetails = getContext('showDetails');
 </script>
@@ -13,7 +13,7 @@
 {#if part.type === 'text' || part.type === 'file' || showDetails?.active !== false}
   <div class="part-container">
     {#if part.type === 'text'}
-      <TextPart {part} />
+      <TextPart {part} {onFork} />
     {:else if part.type === 'tool'}
       <ToolPart {part} />
     {:else if part.type === 'file'}
