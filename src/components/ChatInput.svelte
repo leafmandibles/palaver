@@ -2,7 +2,7 @@
   let text = $state('');
   let pendingAttachments = $state([]);
   
-  let { onsend, mode = "Plan", modelName = "Gemini 3.1 Pro Preview Custom Tools", provider = "OpenRouter", onSelectorClick, error = null, modelCost = null } = $props();
+  let { onsend, mode = "Plan", modelName = "Gemini 3.1 Pro Preview Custom Tools", provider = "OpenRouter", onSelectorClick, error = null, modelCost = null, isWorking = false, onAbort = undefined } = $props();
 
   function handleKeydown(event) {
     if (event.key === 'Enter') {
@@ -18,6 +18,9 @@
           pendingAttachments = [];
         }
       }
+    } else if (event.key === 'Escape' && isWorking && onAbort) {
+      event.preventDefault();
+      onAbort();
     }
   }
 
@@ -107,11 +110,20 @@
           </button>
         </div>
         
-        <button class="icon-btn voice-btn" aria-label="Voice input">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3v18M17 8v8M22 10v4M7 8v8M2 10v4"/>
-          </svg>
-        </button>
+        {#if isWorking && onAbort}
+          <button class="icon-btn stop-btn" aria-label="Stop generation" onclick={onAbort}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" />
+              <rect x="9" y="9" width="6" height="6" rx="1" fill="white" />
+            </svg>
+          </button>
+        {:else}
+          <button class="icon-btn voice-btn" aria-label="Voice input">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v18M17 8v8M22 10v4M7 8v8M2 10v4"/>
+            </svg>
+          </button>
+        {/if}
       </div>
     </div>
   </div>

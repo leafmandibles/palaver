@@ -10,6 +10,8 @@
   let { params } = $props();
   const ctrl = new SessionController();
 
+  let messagesContainer = $state(null);
+
   let showModelSelector = $state(false);
   let selectorType = $state('mode'); // 'mode', 'model', or 'provider'
   let currentMode = $state('plan');
@@ -78,6 +80,17 @@
     return () => {
       ctrl.unsubscribeFromEvents();
     };
+  });
+
+  $effect(() => {
+    // Watch for changes that should trigger auto-scroll
+    const _messages = ctrl.messages;
+    const _streamingSize = ctrl.streamingParts?.size;
+    const _isWorking = ctrl.isWorking;
+
+    if (messagesContainer) {
+      messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
+    }
   });
 
   async function handleSendMessage({ text, attachments = [] }) {
@@ -183,7 +196,7 @@
   {:else if ctrl.loading}
     <p>Loading session...</p>
   {:else}
-    <div class="messages">
+    <div class="messages" bind:this={messagesContainer}>
       {#if ctrl.messages && ctrl.messages.length > 0}
         {#each ctrl.messages as message}
           {#if message.info?.role === 'user' || message.info?.type === 'UserMessage' || message.info?.role === 'UserMessage'}
@@ -230,6 +243,8 @@
       onCycleMode={handleCycleMode}
       error={ctrl.sendError}
       modelCost={modelCost()}
+      isWorking={ctrl.isWorking}
+      onAbort={() => ctrl.abortSession(params.session_id)}
     />
   </div>
 </div>

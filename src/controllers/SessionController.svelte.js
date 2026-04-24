@@ -359,6 +359,28 @@ export class SessionController {
     }
   }
 
+  async abortSession(sessionId) {
+    console.log(`[SessionController::abortSession] - aborting session ${sessionId}`);
+    try {
+      const res = await this.client.session.abort({ path: { id: sessionId } });
+      if (res.error) {
+        console.error(`[SessionController::abortSession] - error:`, res.error);
+        this.sendError = typeof res.error === 'string' ? res.error : (res.error.message || JSON.stringify(res.error));
+        return false;
+      }
+      console.log(`[SessionController::abortSession] - aborted successfully`);
+      this.isWorking = false;
+      this.workingStatus = "";
+      this.streamingParts.clear();
+      await this.load(sessionId);
+      return true;
+    } catch (e) {
+      console.error(`[SessionController::abortSession] - exception:`, e);
+      this.sendError = e.message || 'Failed to abort session.';
+      return false;
+    }
+  }
+
   async revert(sessionId, messageId) {
     console.log(`[SessionController::revert] - called with session ${sessionId}, message ${messageId}`);
 
