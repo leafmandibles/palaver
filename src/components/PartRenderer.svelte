@@ -10,7 +10,7 @@
   const showDetails = getContext('showDetails');
 </script>
 
-{#if part.type === 'text' || showDetails?.active !== false}
+{#if part.type === 'text' || part.type === 'file' || showDetails?.active !== false}
   <div class="part-container">
     {#if part.type === 'text'}
       <TextPart {part} />

@@ -7,7 +7,7 @@
 
   let hasVisibleParts = $derived(() => {
     if (showDetails?.active !== false) return true;
-    return parts.some(p => p.type === 'text');
+    return parts.some(p => p.type === 'text' || p.type === 'file');
   });
 </script>
 

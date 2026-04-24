@@ -13,7 +13,7 @@
   let showModelSelector = $state(false);
   let selectorType = $state('mode'); // 'mode', 'model', or 'provider'
   let currentMode = $state('plan');
-  let currentModel = $state('google/gemini-3-pro-preview');
+  let currentModel = $state('google/gemini-3.1-pro-preview-customtools');
   let currentProvider = $state('openrouter');
 
   // Create a reactive object so it can be updated inside the context
@@ -116,6 +116,14 @@
       showModelSelector = true;
     }
   }
+
+  function handleCycleMode() {
+    if (ctrl.modes && ctrl.modes.length > 0) {
+      const currentIndex = ctrl.modes.indexOf(currentMode);
+      const nextIndex = (currentIndex + 1) % ctrl.modes.length;
+      currentMode = ctrl.modes[nextIndex];
+    }
+  }
 </script>
 
 <div class="session-container">
@@ -198,6 +206,7 @@
       modelName={ctrl.models.find(m => m.id === currentModel)?.name || currentModel}
       provider={ctrl.providers.find(p => p.id === currentProvider)?.name || currentProvider}
       onSelectorClick={handleSelectorClick}
+      onCycleMode={handleCycleMode}
       error={ctrl.sendError}
     />
   </div>

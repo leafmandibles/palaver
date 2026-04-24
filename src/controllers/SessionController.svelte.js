@@ -191,6 +191,16 @@ export class SessionController {
       
       const body = { parts };
       
+      // Optimistically add user message so it shows up immediately
+      this.messages = [
+        ...this.messages,
+        {
+          id: `temp-${Date.now()}`,
+          info: { role: 'user', type: 'UserMessage' },
+          parts: JSON.parse(JSON.stringify(parts))
+        }
+      ];
+      
       if (options.mode) {
         body.agent = options.mode;
       }
