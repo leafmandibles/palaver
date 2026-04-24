@@ -30,10 +30,10 @@
     flex-direction: row-reverse;
   }
   .content {
-    background-color: #f0f8ff;
+    background-color: #4a674940;
     padding: 1rem;
     border-radius: 8px;
     border-top-right-radius: 0;
-    max-width: 80%;
+    max-width: 100%;
   }
 </style>

@@ -27,11 +27,7 @@
     gap: 1rem;
   }
   .content {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
     padding: 1rem;
-    border-radius: 8px;
-    border-top-left-radius: 0;
     max-width: 80%;
   }
 </style>

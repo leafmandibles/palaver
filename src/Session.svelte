@@ -4,10 +4,17 @@
   import UserMessage from './components/UserMessage.svelte';
   import AssistantMessage from './components/AssistantMessage.svelte';
   import ChatInput from './components/ChatInput.svelte';
+  import ModelSelector from './components/ModelSelector.svelte';
   import ProgressIndicator from './components/ProgressIndicator.svelte';
 
   let { params } = $props();
   const ctrl = new SessionController();
+
+  let showModelSelector = $state(false);
+  let selectorType = $state('mode'); // 'mode', 'model', or 'provider'
+  let currentMode = $state('plan');
+  let currentModel = $state('google/gemini-3-pro-preview');
+  let currentProvider = $state('openrouter');
 
   // Create a reactive object so it can be updated inside the context
   let globalCollapse = $state({ active: false });
@@ -24,15 +31,89 @@
     showDetails.active = !showDetails.active;
   }
 
+  let editingTitle = $state(false);
+  let editTitleText = $state('');
+
+  function startTitleEdit() {
+    if (ctrl.session) {
+      editTitleText = ctrl.session.title || 'Untitled Session';
+      editingTitle = true;
+    }
+  }
+
+  async function saveTitleEdit() {
+    if (ctrl.session && params.session_id) {
+      const newTitle = editTitleText.trim() || 'Untitled Session';
+      await ctrl.updateTitle(params.session_id, newTitle);
+      editingTitle = false;
+    }
+  }
+
+  function handleTitleKeydown(e) {
+    if (e.key === 'Enter') {
+      saveTitleEdit();
+    } else if (e.key === 'Escape') {
+      editingTitle = false;
+    }
+  }
+
+  function focusInput(node) {
+    node.focus();
+    node.select();
+  }
+
+  onMount(async () => {
+    await ctrl.fetchOptions();
+    if (ctrl.modes && ctrl.modes.length > 0) {
+      if (!currentMode || !ctrl.modes.includes(currentMode)) {
+        currentMode = ctrl.modes.includes('plan') ? 'plan' : ctrl.modes[0];
+      }
+    }
+  });
+
   $effect(() => {
     if (params.session_id) {
       ctrl.load(params.session_id);
     }
   });
 
-  async function handleSendMessage(text) {
+  async function handleSendMessage({ text, attachments = [] }) {
     if (params.session_id) {
-      await ctrl.sendMessage(params.session_id, text);
+      await ctrl.sendMessage(params.session_id, text, attachments, {
+        mode: currentMode,
+        model: currentModel,
+        provider: currentProvider
+      });
+    }
+  }
+
+  function handleSelectMode(mode) {
+    currentMode = mode;
+    showModelSelector = false;
+  }
+
+  function handleSelectProvider(provider) {
+    currentProvider = provider.id;
+    // Auto-select a model from this provider if current model isn't in it
+    const modelsForProvider = ctrl.models.filter(m => m.providerId === provider.id);
+    if (modelsForProvider.length > 0 && !modelsForProvider.find(m => m.id === currentModel)) {
+      currentModel = modelsForProvider[0].id;
+    }
+    showModelSelector = false;
+  }
+
+  function handleSelectModel(model) {
+    currentModel = model.id;
+    currentProvider = model.providerId; // update provider to match
+    showModelSelector = false;
+  }
+
+  function handleSelectorClick(type) {
+    if (showModelSelector && selectorType === type) {
+      showModelSelector = false;
+    } else {
+      selectorType = type;
+      showModelSelector = true;
     }
   }
 </script>
@@ -42,7 +123,20 @@
     <a href="#/" class="back-link">&larr; Back to Sessions</a>
     {#if ctrl.session}
       <div class="title-row">
-        <h1>{ctrl.session.title || 'Untitled Session'}</h1>
+        {#if editingTitle}
+          <input 
+            type="text" 
+            class="title-input" 
+            bind:value={editTitleText} 
+            onkeydown={handleTitleKeydown} 
+            onblur={saveTitleEdit}
+            use:focusInput
+          />
+        {:else}
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+          <h1 class="clickable-title" onclick={startTitleEdit} title="Click to rename">{ctrl.session.title || 'Untitled Session'}</h1>
+        {/if}
         <div class="actions">
           <button class="collapse-btn" onclick={toggleCollapse}>
             {globalCollapse.active ? 'Expand' : 'Collapse'}
@@ -74,18 +168,43 @@
       {/if}
 
       {#if ctrl.isWorking}
+        {#if ctrl.streamingParts && ctrl.streamingParts.size > 0}
+          <AssistantMessage parts={Array.from(ctrl.streamingParts.values())} />
+        {/if}
         <ProgressIndicator status={ctrl.workingStatus} />
       {/if}
     </div>
   {/if}
 
-  <ChatInput onsend={handleSendMessage} />
+  <div class="input-area">
+    {#if showModelSelector}
+      <ModelSelector 
+        modes={ctrl.modes}
+        models={ctrl.models}
+        providers={ctrl.providers}
+        {currentMode}
+        {currentModel}
+        {currentProvider}
+        type={selectorType}
+        onSelectMode={handleSelectMode}
+        onSelectModel={handleSelectModel}
+        onSelectProvider={handleSelectProvider}
+        onClose={() => showModelSelector = false}
+      />
+    {/if}
+    <ChatInput 
+      onsend={handleSendMessage} 
+      mode={currentMode}
+      modelName={ctrl.models.find(m => m.id === currentModel)?.name || currentModel}
+      provider={ctrl.providers.find(p => p.id === currentProvider)?.name || currentProvider}
+      onSelectorClick={handleSelectorClick}
+      error={ctrl.sendError}
+    />
+  </div>
 </div>
 
 <style>
   .session-container {
-    max-width: 800px;
-    margin: 0 auto;
   }
   .header {
     margin-bottom: 2rem;
@@ -107,8 +226,30 @@
     justify-content: space-between;
     gap: 1rem;
   }
-  .title-row h1 {
+  .title-row h1, .title-input {
     margin: 0;
+  }
+  .clickable-title {
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  .clickable-title:hover {
+    background-color: #f0f0f0;
+    border-color: #ddd;
+  }
+  .title-input {
+    font-size: 2em;
+    font-weight: bold;
+    font-family: inherit;
+    border: 1px solid #0066cc;
+    border-radius: 4px;
+    padding: 2px 4px;
+    outline: none;
+    width: 100%;
+    max-width: 400px;
   }
   .actions {
     display: flex;
@@ -133,5 +274,16 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    padding-bottom: 2rem; /* Add some padding so last message isn't hidden by input */
+  }
+  .input-area {
+    position: sticky;
+    bottom: 0;
+    padding: 1rem 0;
+    /* Add a subtle gradient or solid color to mask messages scrolling behind it */
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 20%, #ffffff 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 </style>

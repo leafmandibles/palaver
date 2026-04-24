@@ -1,9 +1,8 @@
 <script>
   import { getContext } from 'svelte';
 
-  let { defaultCollapsed = true, title = "Details", children } = $props();
-  let initialCollapsed = defaultCollapsed;
-  let collapsed = $state(initialCollapsed);
+  let { defaultCollapsed = true, title = "Details", header, children } = $props();
+  let collapsed = $state(defaultCollapsed);
 
   const globalCollapse = getContext('globalCollapse');
 
@@ -21,7 +20,11 @@
 <div class="collapsible">
   <button class="toggle-btn" onclick={toggle} aria-expanded={!collapsed}>
     <span class="icon" class:rotated={!collapsed}>▶</span>
-    {title}
+    {#if header}
+      {@render header()}
+    {:else}
+      {title}
+    {/if}
   </button>
   
   {#if !collapsed}

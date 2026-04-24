@@ -1,7 +1,8 @@
 <script>
   let text = $state('');
+  let pendingAttachments = $state([]);
   
-  let { onsend, mode = "Plan", modelName = "Gemini 3.1 Pro Preview Custom Tools", provider = "OpenRouter" } = $props();
+  let { onsend, mode = "Plan", modelName = "Gemini 3.1 Pro Preview Custom Tools", provider = "OpenRouter", onSelectorClick, error = null } = $props();
 
   function handleKeydown(event) {
     if (event.key === 'Enter') {
@@ -11,20 +12,72 @@
         event.preventDefault();
         
         const trimmedText = text.trim();
-        if (trimmedText && onsend) {
-          onsend(trimmedText);
+        if ((trimmedText || pendingAttachments.length > 0) && onsend) {
+          onsend({ text: trimmedText, attachments: [...pendingAttachments] });
           text = '';
+          pendingAttachments = [];
         }
       }
     }
   }
+
+  function handlePaste(event) {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image/') !== -1) {
+        const file = items[i].getAsFile();
+        if (!file) continue;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          pendingAttachments = [
+            ...pendingAttachments,
+            {
+              type: file.type,
+              name: file.name || `image-${Date.now()}`,
+              url: e.target.result // Base64 Data URL
+            }
+          ];
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  }
+
+  function removeAttachment(index) {
+    pendingAttachments = pendingAttachments.filter((_, i) => i !== index);
+  }
 </script>
 
 <div class="chat-input-wrapper">
+  {#if error}
+    <div class="error-message">
+      {error}
+    </div>
+  {/if}
   <div class="chat-input-container">
+    {#if pendingAttachments.length > 0}
+      <div class="attachments-preview">
+        {#each pendingAttachments as attachment, index}
+          <div class="attachment-thumbnail">
+            <!-- svelte-ignore a11y_img_redundant_alt -->
+            <img src={attachment.url} alt="Pasted image preview" />
+            <button class="remove-attachment-btn" onclick={() => removeAttachment(index)} aria-label="Remove attachment">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        {/each}
+      </div>
+    {/if}
     <textarea
       bind:value={text}
       onkeydown={handleKeydown}
+      onpaste={handlePaste}
       placeholder="Reply..."
       rows="1"
     ></textarea>
@@ -38,15 +91,21 @@
       </button>
       
       <div class="right-actions">
-        <button class="model-selector">
-          <span class="mode">{mode}</span>
+        <div class="model-selector-group">
+          <button class="selector-part mode" onclick={() => onSelectorClick('mode')}>
+            {mode}
+          </button>
           <span class="separator">·</span>
-          <span class="model-name">{modelName}</span>
-          <span class="provider">{provider}</span>
-          <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
+          <button class="selector-part model-name" onclick={() => onSelectorClick('model')}>
+            {modelName}
+          </button>
+          <button class="selector-part provider" onclick={() => onSelectorClick('provider')}>
+            {provider}
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
         
         <button class="icon-btn voice-btn" aria-label="Voice input">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -60,11 +119,21 @@
 
 <style>
   .chat-input-wrapper {
-    position: sticky;
-    bottom: 0;
-    padding: 1rem 0;
-    /* Add a subtle gradient or solid color to mask messages scrolling behind it */
-    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 20%, #ffffff 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    align-self: center;
+    max-width: 100%;
+    word-break: break-word;
   }
 
   .chat-input-container {
@@ -93,6 +162,55 @@
 
   textarea::placeholder {
     color: #9ca3af;
+  }
+
+  .attachments-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .attachment-thumbnail {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .attachment-thumbnail img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .remove-attachment-btn {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  .remove-attachment-btn:hover {
+    background: #dc2626;
   }
 
   .bottom-bar {
@@ -125,22 +243,34 @@
     gap: 0.5rem;
   }
 
-  .model-selector {
+  .model-selector-group {
     background: none;
-    border: none;
-    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.1rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     font-size: 0.85rem;
-    padding: 0.375rem 0.5rem;
+    padding: 0.2rem;
     border-radius: 0.375rem;
     transition: background-color 0.2s;
   }
 
-  .model-selector:hover {
+  .model-selector-group:hover {
     background: #f3f4f6;
+  }
+
+  .selector-part {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.175rem 0.3rem;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .selector-part:hover {
+    background: #e5e7eb;
   }
 
   .mode {
@@ -150,6 +280,7 @@
 
   .separator {
     color: #9ca3af;
+    padding: 0 0.1rem;
   }
 
   .model-name {

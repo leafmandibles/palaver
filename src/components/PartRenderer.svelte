@@ -2,6 +2,7 @@
   import { getContext } from 'svelte';
   import TextPart from './parts/TextPart.svelte';
   import ToolPart from './parts/ToolPart.svelte';
+  import FilePart from './parts/FilePart.svelte';
   import CollapsiblePart from './CollapsiblePart.svelte';
   
   let { part } = $props();
@@ -15,6 +16,8 @@
       <TextPart {part} />
     {:else if part.type === 'tool'}
       <ToolPart {part} />
+    {:else if part.type === 'file'}
+      <FilePart {part} />
     {:else if part.type === 'Agents' || part.type === 'agents' || part.type === 'agent'}
       <!-- Agent parts are ignored for now -->
     {:else if part.type === 'SubTask' || part.type === 'subtask'}
