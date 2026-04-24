@@ -75,6 +75,9 @@
     if (params.session_id) {
       ctrl.load(params.session_id);
     }
+    return () => {
+      ctrl.unsubscribeFromEvents();
+    };
   });
 
   async function handleSendMessage({ text, attachments = [] }) {

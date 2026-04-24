@@ -18,6 +18,11 @@ export class SessionController {
   models = $state([]);
   providers = $state([]);
 
+  // Persistent event subscription state
+  eventAbortController = null;
+  eventGeneration = 0;
+  currentEventSessionId = null;
+
   async fetchOptions() {
     try {
       console.log(`[SessionController::fetchOptions] - Fetching providers, models, and config`);
@@ -55,15 +60,148 @@ export class SessionController {
     }
   }
 
+  unsubscribeFromEvents() {
+    if (this.eventAbortController) {
+      this.eventAbortController.abort();
+      this.eventAbortController = null;
+    }
+    this.eventGeneration++;
+    this.currentEventSessionId = null;
+  }
+
+  async subscribeToSessionEvents(sessionId) {
+    // If already subscribed to this session, do nothing
+    if (this.currentEventSessionId === sessionId && this.eventAbortController) {
+      return;
+    }
+
+    // Unsubscribe from any previous session
+    this.unsubscribeFromEvents();
+
+    this.currentEventSessionId = sessionId;
+    const abortController = new AbortController();
+    this.eventAbortController = abortController;
+    const gen = ++this.eventGeneration;
+
+    console.log(`[SessionController::subscribeToSessionEvents] - starting subscription for session ${sessionId}, generation ${gen}`);
+    
+    try {
+      const res = await this.client.event.subscribe({ signal: abortController.signal });
+      console.log(`[SessionController::subscribeToSessionEvents] - subscribed successfully for session ${sessionId}, reading stream...`);
+      for await (const data of res.stream) {
+        if (abortController.signal.aborted) {
+          console.log(`[SessionController::subscribeToSessionEvents] - stream aborted, breaking loop`);
+          break;
+        }
+        if (gen !== this.eventGeneration) {
+          console.log(`[SessionController::subscribeToSessionEvents] - generation mismatch (${gen} vs ${this.eventGeneration}), breaking loop`);
+          break;
+        }
+
+        this.processEvent(data, sessionId);
+      }
+      console.log(`[SessionController::subscribeToSessionEvents] - stream ended for session ${sessionId}`);
+    } catch (e) {
+      console.error(`[SessionController::subscribeToSessionEvents] - exception in stream for session ${sessionId}:`, e);
+    } finally {
+      if (this.eventAbortController === abortController) {
+        this.eventAbortController = null;
+      }
+    }
+  }
+
+  processEvent(data, sessionId) {
+    // Skip empty/sync pings
+    if (data === null || data === undefined || data.type === 'sync') {
+      return;
+    }
+
+    const eventType = data.type || data.event || 'unknown';
+
+    // Filter session-specific events by sessionID
+    const eventSessionId = data.properties?.sessionID;
+    if (eventSessionId && eventSessionId !== sessionId) {
+      return;
+    }
+
+    if (eventType === 'session.error' && data.properties?.error) {
+      const err = data.properties.error;
+      this.sendError = err.data?.message || err.message || JSON.stringify(err);
+    } else if (eventType === 'message.updated' && data.properties?.info?.error) {
+      const err = data.properties.info.error;
+      this.sendError = err.data?.message || err.message || JSON.stringify(err);
+    } else if (eventType === 'message.part.delta') {
+      const { partID, field, delta } = data.properties;
+      if (field === 'text') {
+        const existing = this.streamingParts.get(partID) || { type: 'text', text: '' };
+        existing.text = (existing.text || '') + delta;
+        
+        // Track type from delta event if possible
+        if (data.properties.part?.type) {
+          existing.type = data.properties.part.type;
+        } else if (!existing.type) {
+          existing.type = 'text'; // Fallback
+        }
+        
+        this.streamingParts.set(partID, existing);
+      }
+    } else if (eventType === 'message.part.updated') {
+      const { part } = data.properties;
+      this.streamingParts.set(part.id, part);
+    } else if (eventType === 'session.idle') {
+      console.log(`[SessionController::processEvent] - session idle received for ${sessionId}`);
+      this.isWorking = false;
+      this.workingStatus = "";
+      this.streamingParts.clear();
+      this.load(sessionId, true);
+      return;
+    }
+
+    if (typeof data === 'object') {
+       // Try to infer status from common patterns and update selectively to prevent flickering
+       if (data.properties?.name) this.workingStatus = `Using tool: ${data.properties.name}...`;
+       else if (data.properties?.part?.tool) this.workingStatus = `Using tool: ${data.properties.part.tool}...`;
+       else if (data.properties?.part?.agent) this.workingStatus = `Delegating to subagent: ${data.properties.part.agent}...`;
+       else if (data.properties?.part?.name) this.workingStatus = `Consulting agent: ${data.properties.part.name}...`;
+       else if (eventType === 'message.part.delta' && data.properties?.field === 'text') this.workingStatus = 'Typing...';
+    }
+  }
+
+  async checkSessionStatus(sessionId) {
+    console.log(`[SessionController::checkSessionStatus] - checking status for session ${sessionId}`);
+    try {
+      const res = await this.client.session.status();
+      if (res.error) {
+        console.error(`[SessionController::checkSessionStatus] - error:`, res.error);
+        return;
+      }
+      const statuses = res.data || {};
+      const status = statuses[sessionId];
+      console.log(`[SessionController::checkSessionStatus] - status for ${sessionId}:`, status);
+      if (status) {
+        if (status.type === 'busy') {
+          this.isWorking = true;
+          this.workingStatus = 'Working...';
+        } else if (status.type === 'retry') {
+          this.isWorking = true;
+          this.workingStatus = `Retrying... (${status.attempt})`;
+        } else if (status.type === 'idle') {
+          this.isWorking = false;
+          this.workingStatus = '';
+          this.streamingParts.clear();
+        }
+      }
+    } catch (e) {
+      console.error(`[SessionController::checkSessionStatus] - exception:`, e);
+    }
+  }
+
   async load(sessionId, isPolling = false) {
     console.log(`[SessionController::load] - started loading session ${sessionId}, isPolling: ${isPolling}`);
     if (!isPolling) this.loading = true;
     this.error = null;
 
     try {
-      // The openapi schema says `session.messages()` exists, but if we get "undefined" or it fails,
-      // it might be because the URL is actually `/session/:id/message`. Let's fallback to standard fetch if needed
-      // or map appropriately based on the payload format.
       let messagesData = [];
       try {
         console.log(`[SessionController::load] - fetching messages via direct fetch`);
@@ -97,6 +235,10 @@ export class SessionController {
       if (!isPolling) this.loading = false;
       console.log(`[SessionController::load] - finished`);
     }
+
+    // Subscribe to events and check ongoing operations after loading
+    this.subscribeToSessionEvents(sessionId);
+    this.checkSessionStatus(sessionId);
   }
 
   async sendMessage(sessionId, text, attachments = [], options = {}) {
@@ -105,76 +247,11 @@ export class SessionController {
     this.isWorking = true;
     this.workingStatus = "Thinking...";
     this.streamingParts.clear();
-    const abortController = new AbortController();
+
+    // Ensure we are subscribed to events for this session
+    this.subscribeToSessionEvents(sessionId);
 
     try {
-      const listenToEvents = async () => {
-        console.log(`[SessionController::listenToEvents] - starting to subscribe to events`);
-        try {
-          const res = await this.client.event.subscribe({ signal: abortController.signal });
-          console.log(`[SessionController::listenToEvents] - subscribed successfully, reading stream...`);
-          for await (const data of res.stream) {
-            if (abortController.signal.aborted) {
-              console.log(`[SessionController::listenToEvents] - stream aborted, breaking loop`);
-              break;
-            }
-
-            console.log(`[SessionController::listenToEvents] - event received:`, data);
-
-            // Skip empty/sync pings
-            if (data === null || data === undefined || data.type === 'sync') {
-              console.log(`[SessionController::listenToEvents] - skipping sync/empty event`);
-              continue;
-            }
-
-            const eventType = data.type || data.event || 'unknown';
-
-            if (eventType === 'session.error' && data.properties?.error) {
-              const err = data.properties.error;
-              this.sendError = err.data?.message || err.message || JSON.stringify(err);
-            } else if (eventType === 'message.updated' && data.properties?.info?.error) {
-              const err = data.properties.info.error;
-              this.sendError = err.data?.message || err.message || JSON.stringify(err);
-            } else if (eventType === 'message.part.delta') {
-              const { partID, field, delta } = data.properties;
-              if (field === 'text') {
-                const existing = this.streamingParts.get(partID) || { type: 'text', text: '' };
-                existing.text = (existing.text || '') + delta;
-                
-                // Track type from delta event if possible
-                if (data.properties.part?.type) {
-                  existing.type = data.properties.part.type;
-                } else if (!existing.type) {
-                  existing.type = 'text'; // Fallback
-                }
-                
-                this.streamingParts.set(partID, existing);
-              }
-            } else if (eventType === 'message.part.updated') {
-              const { part } = data.properties;
-              this.streamingParts.set(part.id, part);
-            }
-
-            if (typeof data === 'object') {
-               // Try to infer status from common patterns and update selectively to prevent flickering
-               if (data.properties?.name) this.workingStatus = `Using tool: ${data.properties.name}...`;
-               else if (data.properties?.part?.tool) this.workingStatus = `Using tool: ${data.properties.part.tool}...`;
-               else if (data.properties?.part?.agent) this.workingStatus = `Delegating to subagent: ${data.properties.part.agent}...`;
-               else if (data.properties?.part?.name) this.workingStatus = `Consulting agent: ${data.properties.part.name}...`;
-               else if (eventType === 'message.part.delta' && data.properties?.field === 'text') this.workingStatus = 'Typing...';
-            }
-
-            console.log(`[SessionController::listenToEvents] - updated status: ${this.workingStatus}`);
-          }
-          console.log(`[SessionController::listenToEvents] - stream ended`);
-        } catch (e) {
-          console.error(`[SessionController::listenToEvents] - exception in stream:`, e);
-          // Stream aborted or error
-        }
-      };
-
-      listenToEvents();
-
       console.log(`[SessionController::sendMessage] - calling client.session.prompt`);
       
       const parts = [];
@@ -221,6 +298,8 @@ export class SessionController {
       if (res.error) {
         console.error("[SessionController::sendMessage] - Error sending message:", res.error);
         this.sendError = typeof res.error === 'string' ? res.error : (res.error.message || JSON.stringify(res.error));
+        this.isWorking = false;
+        this.workingStatus = "";
         return false;
       }
 
@@ -231,12 +310,9 @@ export class SessionController {
     } catch (e) {
       console.error("[SessionController::sendMessage] - Exception sending message:", e);
       this.sendError = e.message || "An unexpected error occurred.";
-      return false;
-    } finally {
-      console.log(`[SessionController::sendMessage] - finally block, cleaning up`);
       this.isWorking = false;
       this.workingStatus = "";
-      abortController.abort();
+      return false;
     }
   }
 
