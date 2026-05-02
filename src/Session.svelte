@@ -10,7 +10,7 @@
   let { params } = $props();
   const ctrl = new SessionController();
 
-  let messagesContainer = $state(null);
+  let forceScroll = $state(false);
 
   let showModelSelector = $state(false);
   let selectorType = $state('mode'); // 'mode', 'model', or 'provider'
@@ -82,19 +82,34 @@
     };
   });
 
+  function isNearBottom() {
+    const threshold = 150;
+    return (window.scrollY + window.innerHeight) >= (document.documentElement.scrollHeight - threshold);
+  }
+
+  function scrollToBottom() {
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+  }
+
   $effect(() => {
     // Watch for changes that should trigger auto-scroll
     const _messages = ctrl.messages;
     const _streamingSize = ctrl.streamingParts?.size;
     const _isWorking = ctrl.isWorking;
 
-    if (messagesContainer) {
-      messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
+    if (forceScroll || isNearBottom()) {
+      // Use setTimeout to ensure DOM has updated before scrolling
+      setTimeout(() => scrollToBottom(), 0);
+    }
+
+    if (forceScroll) {
+      forceScroll = false;
     }
   });
 
   async function handleSendMessage({ text, attachments = [] }) {
     if (params.session_id) {
+      forceScroll = true;
       await ctrl.sendMessage(params.session_id, text, attachments, {
         mode: currentMode,
         model: currentModel,
@@ -196,13 +211,13 @@
   {:else if ctrl.loading}
     <p>Loading session...</p>
   {:else}
-    <div class="messages" bind:this={messagesContainer}>
+    <div class="messages">
       {#if ctrl.messages && ctrl.messages.length > 0}
         {#each ctrl.messages as message}
           {#if message.info?.role === 'user' || message.info?.type === 'UserMessage' || message.info?.role === 'UserMessage'}
             <UserMessage parts={message.parts || []} />
           {:else}
-            <AssistantMessage parts={message.parts || []} onFork={() => ctrl.forkSession(params.session_id, message.id)} />
+            <AssistantMessage parts={message.parts || []} onFork={() => ctrl.forkSession(params.session_id, message.info?.id || message.id)} />
           {/if}
         {/each}
       {:else}

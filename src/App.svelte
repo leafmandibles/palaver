@@ -1,10 +1,12 @@
 <script>
   import Router from 'svelte-spa-router';
+  import ProjectList from './ProjectList.svelte';
   import SessionHistory from './SessionHistory.svelte';
   import Session from './Session.svelte';
 
   const routes = {
-    '/': SessionHistory,
+    '/': ProjectList,
+    '/project/:project_id/sessions': SessionHistory,
     '/session/:session_id': Session,
   };
 </script>

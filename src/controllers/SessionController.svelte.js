@@ -29,6 +29,7 @@ export class SessionController {
       
       // Fetch providers and models
       const providerRes = await fetch('/opencode/provider');
+      console.log("SessionController:fetchOptions - operation fetch /opencode/provider", providerRes);
       if (providerRes.ok) {
         const data = await providerRes.json();
         const allProviders = data.all || [];
@@ -47,6 +48,7 @@ export class SessionController {
 
       // Fetch config for agents/modes
       const agentsRes = await this.client.app.agents();
+      console.log("SessionController:fetchOptions - operation client.app.agents", agentsRes);
       if (!agentsRes.error && agentsRes.data) {
         this.modes = agentsRes.data
           .filter(a => !a.hidden)
@@ -87,6 +89,7 @@ export class SessionController {
     
     try {
       const res = await this.client.event.subscribe({ signal: abortController.signal });
+      console.log("SessionController:subscribeToSessionEvents - operation client.event.subscribe", res);
       console.log(`[SessionController::subscribeToSessionEvents] - subscribed successfully for session ${sessionId}, reading stream...`);
       for await (const data of res.stream) {
         if (abortController.signal.aborted) {
@@ -171,6 +174,7 @@ export class SessionController {
     console.log(`[SessionController::checkSessionStatus] - checking status for session ${sessionId}`);
     try {
       const res = await this.client.session.status();
+      console.log("SessionController:checkSessionStatus - operation client.session.status", res);
       if (res.error) {
         console.error(`[SessionController::checkSessionStatus] - error:`, res.error);
         return;
@@ -206,6 +210,7 @@ export class SessionController {
       try {
         console.log(`[SessionController::load] - fetching messages via direct fetch`);
         const messagesRes = await fetch(`/opencode/session/${sessionId}/message`);
+        console.log("SessionController:load - operation fetch messages", messagesRes);
         if (messagesRes.ok) {
            messagesData = await messagesRes.json();
            console.log(`[SessionController::load] - fetched ${messagesData.length} messages`);
@@ -218,6 +223,7 @@ export class SessionController {
 
       console.log(`[SessionController::load] - calling client.session.get for ${sessionId}`);
       const sessionRes = await this.client.session.get({ path: { id: sessionId } });
+      console.log("SessionController:load - operation client.session.get", sessionRes);
 
       if (sessionRes.error) {
          console.error(`[SessionController::load] - error from client.session.get:`, sessionRes.error);
@@ -294,6 +300,7 @@ export class SessionController {
         path: { id: sessionId },
         body: body
       });
+      console.log("SessionController:sendMessage - operation client.session.prompt", res);
 
       if (res.error) {
         console.error("[SessionController::sendMessage] - Error sending message:", res.error);
@@ -323,6 +330,7 @@ export class SessionController {
         path: { id: sessionId },
         body: { title }
       });
+      console.log("SessionController:updateTitle - operation client.session.update", res);
       if (res.error) {
         console.error(`[SessionController::updateTitle] - error from client:`, res.error);
         return false;
@@ -344,6 +352,7 @@ export class SessionController {
         path: { id: sessionId },
         body: { messageID: messageId }
       });
+      console.log("SessionController:forkSession - operation client.session.fork", res);
       if (res.error) {
         console.error(`[SessionController::forkSession] - error:`, res.error);
         this.error = typeof res.error === 'string' ? res.error : (res.error.message || JSON.stringify(res.error));
@@ -363,6 +372,7 @@ export class SessionController {
     console.log(`[SessionController::abortSession] - aborting session ${sessionId}`);
     try {
       const res = await this.client.session.abort({ path: { id: sessionId } });
+      console.log("SessionController:abortSession - operation client.session.abort", res);
       if (res.error) {
         console.error(`[SessionController::abortSession] - error:`, res.error);
         this.sendError = typeof res.error === 'string' ? res.error : (res.error.message || JSON.stringify(res.error));

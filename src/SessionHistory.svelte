@@ -1,37 +1,49 @@
 <script>
-  import { onMount } from 'svelte';
   import { SessionListController } from './controllers/SessionListController.svelte.js';
   
-  const ctrl = new SessionListController();
+  let { params } = $props();
+  
+  const sessionListCtrl = new SessionListController();
 
-  onMount(() => {
-    ctrl.load();
-  });
+  // 1. A pure async function to handle the fetching sequence
+  async function loadFlow(projectId) {
+    if (!projectId) return [];
+    
+    return await sessionListCtrl.load(projectId);
+  }
+
+  // 2. Use $derived to create a reactive promise that re-runs if params.project_id changes
+  let orchestrationPromise = $derived(loadFlow(params.project_id));
 </script>
 
 <div>
   <div class="header">
-    <h1>Opencode Sessions</h1>
-    <button class="new-session-btn" onclick={() => ctrl.createSession()}>[new]</button>
+    <a href="#/" class="back-link">&larr; Projects</a>
+    <h1>Project Sessions</h1>
+    <button class="new-session-btn" onclick={() => sessionListCtrl.createSession()}>[new]</button>
   </div>
-  {#if ctrl.loading}
+
+  {#await orchestrationPromise}
     <p>Loading sessions...</p>
-  {:else if ctrl.error}
-    <p style="color: red;">Error loading sessions: {ctrl.error}</p>
-  {:else if ctrl.sessions.length === 0}
-    <p>No sessions found.</p>
-  {:else}
-    <ul>
-      {#each ctrl.sessions as session}
-        <li>
-          <a href="#/session/{session.id}">
-            <strong>{session.title || 'Untitled Session'}</strong> 
-          </a>
-          {#if session.directory} <br><small>{session.directory}</small>{/if}
-        </li>
-      {/each}
-    </ul>
-  {/if}
+  {:then sessions}
+    {#if sessions.length === 0}
+      <p>No sessions found for this project.</p>
+    {:else}
+      <ul>
+        {#each sessions as session}
+          <li>
+            <a href="#/session/{session.id}">
+              <strong>{session.title || 'Untitled Session'}</strong> 
+            </a>
+            {#if session.directory} <br><small>{session.directory}</small>{/if}
+          </li>
+        {/each}
+      </ul>
+    {/if}
+  {:catch err}
+    <p style="color: red;">Error loading sessions: {err.message}</p>
+    <button onclick={() => { orchestrationPromise = loadFlow(params.project_id); }}>Try Again</button>
+  {/await}
 </div>
 
 <style>
@@ -43,6 +55,14 @@
   }
   .header h1 {
     margin: 0;
+  }
+  .back-link {
+    text-decoration: none;
+    color: #555;
+    font-weight: bold;
+  }
+  .back-link:hover {
+    color: #000;
   }
   .new-session-btn {
     background: transparent;
