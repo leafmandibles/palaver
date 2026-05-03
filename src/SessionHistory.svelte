@@ -36,7 +36,7 @@
 <div>
   <div class="header">
     <a href="#/" class="back-link">&larr; Projects</a>
-    <h1>Project Sessions</h1>
+    <h1>{sessionListCtrl.project ? summarizePath(sessionListCtrl.project.worktree) : 'Loading...'}</h1>
     <button class="new-session-btn" onclick={() => sessionListCtrl.createSession(params.project_id)}>[new]</button>
   </div>
 
