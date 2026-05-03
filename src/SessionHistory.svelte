@@ -139,9 +139,9 @@
   }
 
   @keyframes subtle-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.1); border-color: #e0e0e0; }
-    50% { box-shadow: 0 0 10px 2px rgba(52, 152, 219, 0.4); border-color: #3498db; }
-    100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.1); border-color: #e0e0e0; }
+    0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.1); border-color: #e0e0e0; background-color: #ffffff; }
+    50% { box-shadow: 0 0 10px 2px rgba(46, 204, 113, 0.4); border-color: #2ecc71; background-color: #e8f5e9; }
+    100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.1); border-color: #e0e0e0; background-color: #ffffff; }
   }
 
   @keyframes dot-blink {
@@ -157,7 +157,7 @@
     display: inline-block;
     width: 8px;
     height: 8px;
-    background-color: #3498db;
+    background-color: #2ecc71;
     border-radius: 50%;
     margin-right: 6px;
     animation: dot-blink 1.5s infinite ease-in-out;
