@@ -1,9 +1,11 @@
 import { createOpencodeClient } from '@opencode-ai/sdk/client';
+import { groupProjectsByDate } from '../utils/date.js';
 
 export class ProjectListController {
   client = createOpencodeClient({ baseUrl: '/opencode' });
   
   projects = $state([]);
+  groupedProjects = $derived(groupProjectsByDate(this.projects));
   error = $state(null);
   loading = $state(true);
 

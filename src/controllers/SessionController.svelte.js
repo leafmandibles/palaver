@@ -104,8 +104,22 @@ export class SessionController {
         this.processEvent(data, sessionId);
       }
       console.log(`[SessionController::subscribeToSessionEvents] - stream ended for session ${sessionId}`);
+      
+      // Auto-reconnect if the stream ended unexpectedly
+      if (!abortController.signal.aborted && gen === this.eventGeneration) {
+        console.log(`[SessionController::subscribeToSessionEvents] - stream dropped, attempting reconnect...`);
+        setTimeout(() => {
+          this.subscribeToSessionEvents(sessionId);
+        }, 2000); // 2-second backoff
+      }
     } catch (e) {
       console.error(`[SessionController::subscribeToSessionEvents] - exception in stream for session ${sessionId}:`, e);
+      // Auto-reconnect on error as well
+      if (!abortController.signal.aborted && gen === this.eventGeneration) {
+        setTimeout(() => {
+          this.subscribeToSessionEvents(sessionId);
+        }, 5000); // 5-second backoff on error
+      }
     } finally {
       if (this.eventAbortController === abortController) {
         this.eventAbortController = null;

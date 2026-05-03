@@ -13,6 +13,10 @@
     if (showDetails?.active !== false) return true;
     return parts.some(p => p.type === 'text' || p.type === 'file');
   });
+
+  let selectedPreview = $state(null);
+  
+  import PreviewTray from './PreviewTray.svelte';
 </script>
 
 {#if hasVisibleParts()}
@@ -31,7 +35,9 @@
       <div class="attachments-container">
         {#each fileParts as part}
           {#if part.mime?.startsWith('image/')}
-            <div class="image-thumbnail">
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div class="image-thumbnail clickable" onclick={() => selectedPreview = part} title="Click to preview">
               <!-- svelte-ignore a11y_img_redundant_alt -->
               <img src={part.url} alt={part.filename || 'Image attachment'} />
             </div>
@@ -43,6 +49,10 @@
           {/if}
         {/each}
       </div>
+    {/if}
+
+    {#if selectedPreview}
+      <PreviewTray part={selectedPreview} onClose={() => selectedPreview = null} />
     {/if}
   </div>
 {/if}
@@ -85,6 +95,16 @@
     background: #ffffff;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     max-width: 200px; /* Adjust size as needed to match the screenshot */
+    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  }
+
+  .image-thumbnail.clickable {
+    cursor: pointer;
+  }
+
+  .image-thumbnail.clickable:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 
   .image-thumbnail img {

@@ -1,39 +1,71 @@
 <script>
-  import { onMount } from 'svelte';
   import { ProjectListController } from './controllers/ProjectListController.svelte.js';
+  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
+  import { GeolocationState } from './utils/geolocation.svelte.js';
+  import { summarizePath } from './utils/path.js';
   
   const ctrl = new ProjectListController();
+  const globalEvent = new GlobalEvents();
+  const geo = new GeolocationState();
 
-  onMount(() => {
-    ctrl.load();
+  const activeProjectIds = $derived(new Set(globalEvent.events.map(e => e.project)));
+
+  $effect(() => {
+    return () => {
+      globalEvent.destroy();
+    };
   });
+
+  // Run once on initialization (no reactive dependencies needed here)
+  let initializationPromise = ctrl.load();
 </script>
 
 <div>
+Hello 
   <div class="header">
     <h1>Opencode Projects</h1>
+    {#if geo.location}
+      <span class="location-info">
+        📍 {geo.location.latitude.toFixed(4)}, {geo.location.longitude.toFixed(4)}
+      </span>
+    {:else if geo.error}
+      <span class="location-info error">
+        📍 {geo.error}
+      </span>
+    {/if}
   </div>
-  {#if ctrl.loading}
+  {#await initializationPromise}
     <p>Loading projects...</p>
-  {:else if ctrl.error}
-    <p style="color: red;">Error loading projects: {ctrl.error}</p>
-  {:else if ctrl.projects.length === 0}
-    <p>No projects found.</p>
-  {:else}
-    <ul>
-      {#each ctrl.projects as project}
-        <li>
-          <a href="#/project/{project.id}/sessions">
-            <strong>{project.worktree}</strong>
-          </a>
-          <br><small>ID: {project.id}</small>
-          {#if project.lastUpdated}
-            <br><small class="text-muted">Last Active: {new Date(project.lastUpdated).toLocaleString()}</small>
-          {/if}
-        </li>
-      {/each}
-    </ul>
-  {/if}
+  {:then}
+    {#if ctrl.error}
+      <p style="color: red;">Error loading projects: {ctrl.error}</p>
+    {:else if ctrl.groupedProjects.length === 0}
+      <p>No projects found.</p>
+    {:else}
+      <div class="project-groups">
+        {#each ctrl.groupedProjects as group}
+          <h3 class="date-header">{group.date}</h3>
+          <ul>
+            {#each group.items as project}
+              <li class:active={activeProjectIds.has(project.id)}>
+                <a href="#/project/{project.id}/sessions">
+                  <strong title={project.worktree}>
+                    {#if activeProjectIds.has(project.id)}
+                      <span class="pulse-dot"></span>
+                    {/if}
+                    {summarizePath(project.worktree)}
+                  </strong>
+                </a>
+                {#if project.time?.updated || project.time?.created}
+                  <br><small class="text-muted">Last Active: {new Date(project.time?.updated || project.time?.created).toLocaleTimeString()}</small>
+                {/if}
+              </li>
+            {/each}
+          </ul>
+        {/each}
+      </div>
+    {/if}
+  {/await}
 </div>
 
 <style>
@@ -46,15 +78,42 @@
   .header h1 {
     margin: 0;
   }
+  .location-info {
+    font-size: 0.9rem;
+    color: #666;
+    margin-left: auto;
+  }
+  .location-info.error {
+    color: #cc0000;
+  }
+  .date-header {
+    margin: 1.5rem 0 0.5rem 0;
+    font-size: 1.2rem;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.25rem;
+  }
   ul {
     list-style-type: none;
     padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
   li {
-    margin-bottom: 1rem;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    flex: 1 1 300px;
+    max-width: 450px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 0;
+  }
+  li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   }
   a {
     text-decoration: none;
@@ -65,5 +124,30 @@
   }
   .text-muted {
     color: #666;
+  }
+
+  @keyframes subtle-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.1); border-color: #e0e0e0; }
+    50% { box-shadow: 0 0 10px 2px rgba(52, 152, 219, 0.4); border-color: #3498db; }
+    100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.1); border-color: #e0e0e0; }
+  }
+
+  @keyframes dot-blink {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  li.active {
+    animation: subtle-pulse 2s infinite ease-in-out;
+  }
+
+  .pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #3498db;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: dot-blink 1.5s infinite ease-in-out;
   }
 </style>

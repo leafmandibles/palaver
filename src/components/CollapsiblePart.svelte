@@ -1,7 +1,7 @@
 <script>
   import { getContext } from 'svelte';
 
-  let { defaultCollapsed = true, title = "Details", header, children } = $props();
+  let { defaultCollapsed = true, title = "Details", header, preview, children } = $props();
   let collapsed = $state(defaultCollapsed);
 
   const globalCollapse = getContext('globalCollapse');
@@ -27,6 +27,12 @@
     {/if}
   </button>
   
+  {#if collapsed && preview}
+    <div class="preview-content">
+      {@render preview({ toggle })}
+    </div>
+  {/if}
+
   {#if !collapsed}
     <div class="content">
       {@render children()}
@@ -65,6 +71,13 @@
   }
   .icon.rotated {
     transform: rotate(90deg);
+  }
+  .preview-content {
+    padding: 0.5rem 0.75rem;
+    border-top: 1px dashed #dee2e6;
+    font-size: 0.9em;
+    color: #666;
+    background: #fdfdfd;
   }
   .content {
     padding: 0.75rem;

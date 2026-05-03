@@ -1,15 +1,36 @@
 <script>
   import { SessionListController } from './controllers/SessionListController.svelte.js';
+  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
+  import { groupItemsByDate } from './utils/date.js';
+  import { summarizePath } from './utils/path.js';
   
   let { params } = $props();
   
   const sessionListCtrl = new SessionListController();
+  const globalEvent = new GlobalEvents();
+
+  const activeSessionIds = $derived(
+    new Set(
+      globalEvent.events
+        .filter(e => e.project === params.project_id && e.payload?.properties?.sessionID)
+        .map(e => e.payload.properties.sessionID)
+    )
+  );
+
+  $effect(() => {
+    return () => {
+      globalEvent.destroy();
+    };
+  });
 
   // 1. A pure async function to handle the fetching sequence
   async function loadFlow(projectId) {
     if (!projectId) return [];
     
-    return await sessionListCtrl.load(projectId);
+    const sessions = await sessionListCtrl.load(projectId);
+    // Ensure sessions are sorted newest first
+    sessions.sort((a, b) => (b.time?.updated || 0) - (a.time?.updated || 0));
+    return sessions;
   }
 
   // 2. Use $derived to create a reactive promise that re-runs if params.project_id changes
@@ -20,7 +41,7 @@
   <div class="header">
     <a href="#/" class="back-link">&larr; Projects</a>
     <h1>Project Sessions</h1>
-    <button class="new-session-btn" onclick={() => sessionListCtrl.createSession()}>[new]</button>
+    <button class="new-session-btn" onclick={() => sessionListCtrl.createSession(params.project_id)}>[new]</button>
   </div>
 
   {#await orchestrationPromise}
@@ -29,16 +50,32 @@
     {#if sessions.length === 0}
       <p>No sessions found for this project.</p>
     {:else}
-      <ul>
-        {#each sessions as session}
-          <li>
-            <a href="#/session/{session.id}">
-              <strong>{session.title || 'Untitled Session'}</strong> 
-            </a>
-            {#if session.directory} <br><small>{session.directory}</small>{/if}
-          </li>
+      {@const groupedSessions = groupItemsByDate(sessions)}
+      <div class="session-groups">
+        {#each groupedSessions as group}
+          <h3 class="date-header">{group.date}</h3>
+          <ul>
+            {#each group.items as session}
+              <li class:active={activeSessionIds.has(session.id)}>
+                <a href="#/session/{session.id}">
+                  <strong>
+                    {#if activeSessionIds.has(session.id)}
+                      <span class="pulse-dot"></span>
+                    {/if}
+                    {session.title || 'Untitled Session'}
+                  </strong> 
+                </a>
+                {#if session.directory} 
+                  <br><small title={session.directory}>{summarizePath(session.directory)}</small>
+                {/if}
+                {#if session.time?.updated || session.time?.created}
+                  <br><small class="text-muted">Last Active: {new Date(session.time?.updated || session.time?.created).toLocaleTimeString()}</small>
+                {/if}
+              </li>
+            {/each}
+          </ul>
         {/each}
-      </ul>
+      </div>
     {/if}
   {:catch err}
     <p style="color: red;">Error loading sessions: {err.message}</p>
@@ -75,14 +112,61 @@
   .new-session-btn:hover {
     text-decoration: underline;
   }
+  .date-header {
+    margin: 1.5rem 0 0.5rem 0;
+    font-size: 1.2rem;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.25rem;
+  }
   ul {
     list-style-type: none;
     padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
   li {
-    margin-bottom: 1rem;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    flex: 1 1 300px;
+    max-width: 450px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 0;
+  }
+  li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .text-muted {
+    color: #666;
+  }
+
+  @keyframes subtle-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.1); border-color: #e0e0e0; }
+    50% { box-shadow: 0 0 10px 2px rgba(52, 152, 219, 0.4); border-color: #3498db; }
+    100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.1); border-color: #e0e0e0; }
+  }
+
+  @keyframes dot-blink {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  li.active {
+    animation: subtle-pulse 2s infinite ease-in-out;
+  }
+
+  .pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #3498db;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: dot-blink 1.5s infinite ease-in-out;
   }
 </style>

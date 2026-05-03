@@ -1,0 +1,123 @@
+<script>
+  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
+
+  const globalEvent = new GlobalEvents();
+
+  $effect(() => {
+    return () => {
+      globalEvent.destroy();
+    };
+  });
+</script>
+
+<div class="events-container">
+  <div class="header">
+    <h1>Live Events (60s rolling window)</h1>
+    <a href="#/" class="back-link">← Back to Projects</a>
+  </div>
+  
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Project</th>
+          <th>Type</th>
+          <th>Payload</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each [...globalEvent.events].reverse() as event (event.timestamp + '_' + event.project + '_' + event.type)}
+          <tr>
+            <td class="time">{new Date(event.timestamp).toLocaleTimeString()}</td>
+            <td class="project">{event.project}</td>
+            <td class="type">{event.type}</td>
+            <td class="payload">
+               <pre>{JSON.stringify(event.payload, null, 2)}</pre>
+            </td>
+          </tr>
+        {/each}
+        {#if globalEvent.events.length === 0}
+          <tr>
+            <td colspan="4" class="empty">Waiting for events...</td>
+          </tr>
+        {/if}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .events-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .back-link {
+    text-decoration: none;
+    color: #0066cc;
+    font-weight: bold;
+  }
+  .back-link:hover {
+    text-decoration: underline;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    position: sticky;
+    top: 0;
+  }
+  .time {
+    white-space: nowrap;
+    color: #666;
+  }
+  .project {
+    font-family: monospace;
+    font-size: 0.9rem;
+  }
+  .type {
+    font-weight: bold;
+    color: #2c3e50;
+  }
+  .payload pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 0.8rem;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #eaeaea;
+  }
+  .empty {
+    text-align: center;
+    color: #888;
+    padding: 2rem !important;
+    font-style: italic;
+  }
+</style>

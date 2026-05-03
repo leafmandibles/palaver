@@ -3,6 +3,8 @@
   import TextPart from './parts/TextPart.svelte';
   import ToolPart from './parts/ToolPart.svelte';
   import FilePart from './parts/FilePart.svelte';
+  import ReasoningPart from './parts/ReasoningPart.svelte';
+  import AgentPart from './parts/AgentPart.svelte';
   import CollapsiblePart from './CollapsiblePart.svelte';
   
   let { part, onFork = undefined } = $props();
@@ -18,10 +20,12 @@
       <ToolPart {part} />
     {:else if part.type === 'file'}
       <FilePart {part} />
+    {:else if part.type === 'reasoning'}
+      <ReasoningPart {part} />
     {:else if part.type === 'Agents' || part.type === 'agents' || part.type === 'agent'}
-      <!-- Agent parts are ignored for now -->
-    {:else if part.type === 'SubTask' || part.type === 'subtask'}
-      <!-- SubTask parts are ignored for now -->
+      <AgentPart {part} />
+    {:else if part.type === 'SubTask' || part.type === 'subtask' || part.type === 'step-start' || part.type === 'step-finish' || part.type === 'compaction'}
+      <!-- Internal system parts are ignored -->
     {:else}
       <!-- Fallback for unknown parts -->
       <CollapsiblePart title="System Info: {part.type || 'Unknown'}" defaultCollapsed={true}>

@@ -23,9 +23,9 @@ export class SessionListController {
           throw new Error("Project not found");
       }
 
-      console.log(`[SessionListController::load] - calling client.session.list() with directory: ${project.worktree}`);
+      console.log(`[SessionListController::load] - calling client.session.list() with scope: 'project', directory: ${project.worktree}`);
       const res = await this.client.session.list({
-        query: { directory: project.worktree }
+        query: { scope: 'project', directory: project.worktree }
       });
       console.log("SessionListController:load - operation client.session.list", res);
       
@@ -48,11 +48,26 @@ export class SessionListController {
     }
   }
 
-  async createSession() {
-    console.log(`[SessionListController::createSession] - started`);
+  async createSession(projectId) {
+    console.log(`[SessionListController::createSession] - started for project ${projectId}`);
     try {
-      console.log(`[SessionListController::createSession] - calling client.session.create()`);
-      const res = await this.client.session.create({ body: { title: 'New Session' } });
+      let directory;
+      if (projectId) {
+        console.log(`[SessionListController::createSession] - calling client.project.list() to find directory`);
+        const allProjectsRes = await this.client.project.list();
+        const project = allProjectsRes.data?.find(p => p.id === projectId);
+        if (project) {
+          directory = project.worktree;
+        }
+      }
+
+      console.log(`[SessionListController::createSession] - calling client.session.create() with directory: ${directory}`);
+      const res = await this.client.session.create({ 
+        body: { 
+          title: 'New Session'
+        },
+        ...(directory ? { query: { directory } } : {})
+      });
       console.log("SessionListController:createSession - operation client.session.create", res);
       if (res.error) {
         console.error(`[SessionListController::createSession] - error from client.session.create:`, res.error);
