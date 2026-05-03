@@ -8,14 +8,14 @@ export class SessionListController {
   error = $state(null);
   loading = $state(true);
 
-  async load(projectId) {
-    console.log(`[SessionListController::load] - started loading sessions for project ${projectId}`);
+  async refresh(projectId) {
+    console.log(`[SessionListController::refresh] - started loading sessions for project ${projectId}`);
     this.loading = true;
     this.error = null;
 
     try {
       // Find the project's worktree to filter by directory
-      console.log(`[SessionListController::load] - calling client.project.list()`);
+      console.log(`[SessionListController::refresh] - calling client.project.list()`);
       const allProjectsRes = await this.client.project.list();
       const project = allProjectsRes.data?.find(p => p.id === projectId);
 
@@ -23,28 +23,26 @@ export class SessionListController {
           throw new Error("Project not found");
       }
 
-      console.log(`[SessionListController::load] - calling client.session.list() with scope: 'project', directory: ${project.worktree}`);
+      console.log(`[SessionListController::refresh] - calling client.session.list() with scope: 'project', directory: ${project.worktree}`);
       const res = await this.client.session.list({
         query: { scope: 'project', directory: project.worktree }
       });
-      console.log("SessionListController:load - operation client.session.list", res);
+      console.log("SessionListController:refresh - operation client.session.list", res);
       
       if (res.error) {
-          console.error(`[SessionListController::load] - error from client.session.list:`, res.error);
+          console.error(`[SessionListController::refresh] - error from client.session.list:`, res.error);
           this.error = JSON.stringify(res.error);
       } else {
           // The backend does the filtering for us now based on the directory
           this.sessions = res.data || [];
-          console.log(`[SessionListController::load] - loaded ${this.sessions.length} sessions for project ${projectId}`);
-          return this.sessions;
+          console.log(`[SessionListController::refresh] - loaded ${this.sessions.length} sessions for project ${projectId}`);
       }
     } catch (err) {
-      console.error(`[SessionListController::load] - caught exception:`, err);
+      console.error(`[SessionListController::refresh] - caught exception:`, err);
       this.error = err.message;
-      throw err;
     } finally {
       this.loading = false;
-      console.log(`[SessionListController::load] - finished`);
+      console.log(`[SessionListController::refresh] - finished`);
     }
   }
 

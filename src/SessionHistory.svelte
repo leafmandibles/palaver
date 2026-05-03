@@ -23,18 +23,14 @@
     };
   });
 
-  // 1. A pure async function to handle the fetching sequence
-  async function loadFlow(projectId) {
-    if (!projectId) return [];
-    
-    const sessions = await sessionListCtrl.load(projectId);
-    // Ensure sessions are sorted newest first
-    sessions.sort((a, b) => (b.time?.updated || 0) - (a.time?.updated || 0));
-    return sessions;
-  }
+  // Fire-once initialization (svelte-spa-router remounts component on param changes)
+  sessionListCtrl.refresh(params.project_id);
 
-  // 2. Use $derived to create a reactive promise that re-runs if params.project_id changes
-  let orchestrationPromise = $derived(loadFlow(params.project_id));
+  const sortedSessions = $derived(
+    [...sessionListCtrl.sessions].sort((a, b) => (b.time?.updated || 0) - (a.time?.updated || 0))
+  );
+  
+  const groupedSessions = $derived(groupItemsByDate(sortedSessions));
 </script>
 
 <div>
@@ -44,13 +40,14 @@
     <button class="new-session-btn" onclick={() => sessionListCtrl.createSession(params.project_id)}>[new]</button>
   </div>
 
-  {#await orchestrationPromise}
+  {#if sessionListCtrl.loading}
     <p>Loading sessions...</p>
-  {:then sessions}
-    {#if sessions.length === 0}
-      <p>No sessions found for this project.</p>
-    {:else}
-      {@const groupedSessions = groupItemsByDate(sessions)}
+  {:else if sessionListCtrl.error}
+    <p style="color: red;">Error loading sessions: {sessionListCtrl.error}</p>
+    <button onclick={() => sessionListCtrl.refresh(params.project_id)}>Try Again</button>
+  {:else if sortedSessions.length === 0}
+    <p>No sessions found for this project.</p>
+  {:else}
       <div class="session-groups">
         {#each groupedSessions as group}
           <h3 class="date-header">{group.date}</h3>
@@ -77,10 +74,6 @@
         {/each}
       </div>
     {/if}
-  {:catch err}
-    <p style="color: red;">Error loading sessions: {err.message}</p>
-    <button onclick={() => { orchestrationPromise = loadFlow(params.project_id); }}>Try Again</button>
-  {/await}
 </div>
 
 <style>
