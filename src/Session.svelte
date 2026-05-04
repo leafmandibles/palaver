@@ -6,6 +6,7 @@
   import ChatInput from './components/ChatInput.svelte';
   import ModelSelector from './components/ModelSelector.svelte';
   import ProgressIndicator from './components/ProgressIndicator.svelte';
+  import { getPathInfo } from './utils/path.js';
 
   let { params } = $props();
   const ctrl = new SessionController();
@@ -277,20 +278,30 @@
     <a href="#/" class="back-link">&larr; Back to Sessions</a>
     {#if ctrl.session}
       <div class="title-row">
-        {#if editingTitle}
-          <input 
-            type="text" 
-            class="title-input" 
-            bind:value={editTitleText} 
-            onkeydown={handleTitleKeydown} 
-            onblur={saveTitleEdit}
-            use:focusInput
-          />
-        {:else}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
-          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-          <h1 class="clickable-title" onclick={startTitleEdit} title="Click to rename">{ctrl.session.title || 'Untitled Session'}</h1>
-        {/if}
+        <div class="title-and-worktree">
+          {#if editingTitle}
+            <input 
+              type="text" 
+              class="title-input" 
+              bind:value={editTitleText} 
+              onkeydown={handleTitleKeydown} 
+              onblur={saveTitleEdit}
+              use:focusInput
+            />
+          {:else}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+            <h1 class="clickable-title" onclick={startTitleEdit} title="Click to rename">{ctrl.session.title || 'Untitled Session'}</h1>
+          {/if}
+          {#if ctrl.session.directory}
+            {@const pathInfo = getPathInfo(ctrl.session.directory, ctrl.project?.worktree)}
+            {#if pathInfo?.worktree}
+              <div class="session-worktree">
+                <small title="Worktree Subfolder">{pathInfo.worktree}</small>
+              </div>
+            {/if}
+          {/if}
+        </div>
         <div class="actions">
           <button class="collapse-btn" onclick={toggleCollapse}>
             {globalCollapse.active ? 'Expand' : 'Collapse'}
@@ -400,6 +411,20 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+  }
+  .title-and-worktree {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+  }
+  .session-worktree {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.15rem 0.6rem;
+    color: #4b5563;
+    white-space: nowrap;
   }
   .title-row h1, .title-input {
     margin: 0;

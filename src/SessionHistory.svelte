@@ -2,7 +2,7 @@
   import { SessionListController } from './controllers/SessionListController.svelte.js';
   import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
   import { groupItemsByDate } from './utils/date.js';
-  import { summarizePath } from './utils/path.js';
+  import { summarizePath, getPathInfo } from './utils/path.js';
   
   let { params } = $props();
   
@@ -54,20 +54,37 @@
           <ul>
             {#each group.items as session}
               <li class:active={activeSessionIds.has(session.id)}>
-                <a href="#/session/{session.id}">
-                  <strong>
-                    {#if activeSessionIds.has(session.id)}
-                      <span class="pulse-dot"></span>
+                <div class="card-top">
+                  <a href="#/session/{session.id}">
+                    <strong>
+                      {#if activeSessionIds.has(session.id)}
+                        <span class="pulse-dot"></span>
+                      {/if}
+                      {session.title || 'Untitled Session'}
+                    </strong> 
+                  </a>
+                  {#if session.directory} 
+                    {@const pathInfo = getPathInfo(session.directory, sessionListCtrl.project?.worktree)}
+                    <div class="session-path">
+                      <small title={session.directory}>{pathInfo?.basePath}</small>
+                    </div>
+                  {/if}
+                </div>
+                <div class="card-bottom">
+                  <div class="session-time">
+                    {#if session.time?.updated || session.time?.created}
+                      <small class="text-muted">Last Active: {new Date(session.time?.updated || session.time?.created).toLocaleTimeString()}</small>
                     {/if}
-                    {session.title || 'Untitled Session'}
-                  </strong> 
-                </a>
-                {#if session.directory} 
-                  <br><small title={session.directory}>{summarizePath(session.directory)}</small>
-                {/if}
-                {#if session.time?.updated || session.time?.created}
-                  <br><small class="text-muted">Last Active: {new Date(session.time?.updated || session.time?.created).toLocaleTimeString()}</small>
-                {/if}
+                  </div>
+                  {#if session.directory}
+                    {@const pathInfo = getPathInfo(session.directory, sessionListCtrl.project?.worktree)}
+                    {#if pathInfo?.worktree}
+                      <div class="session-worktree">
+                        <small title="Worktree Subfolder">{pathInfo.worktree}</small>
+                      </div>
+                    {/if}
+                  {/if}
+                </div>
               </li>
             {/each}
           </ul>
@@ -129,6 +146,28 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: transform 0.2s, box-shadow 0.2s;
     margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .card-top {
+    margin-bottom: 0.5rem;
+  }
+  .session-path {
+    margin-top: 0.25rem;
+  }
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 0.5rem;
+  }
+  .session-worktree {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.15rem 0.6rem;
+    color: #4b5563;
   }
   li:hover {
     transform: translateY(-2px);

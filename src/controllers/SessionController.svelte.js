@@ -5,6 +5,7 @@ export class SessionController {
   client = createOpencodeClient({ baseUrl: '/opencode' });
   
   session = $state(null);
+  project = $state(null);
   messages = $state([]);
   error = $state(null);
   sendError = $state(null);
@@ -248,6 +249,15 @@ export class SessionController {
       console.log(`[SessionController::load] - session loaded successfully`);
       this.session = sessionRes.data;
       this.messages = messagesData;
+
+      if (this.session?.projectID) {
+        try {
+          const allProjectsRes = await this.client.project.list();
+          this.project = allProjectsRes.data?.find(p => p.id === this.session.projectID) || null;
+        } catch(e) {
+          console.error("[SessionController::load] - Error fetching project:", e);
+        }
+      }
     } catch (err) {
       console.error(`[SessionController::load] - caught exception:`, err);
       this.error = err.message;
