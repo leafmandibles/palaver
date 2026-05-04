@@ -20,6 +20,5 @@
 <style>
   main {
     padding: 1rem;
-    font-family: sans-serif;
   }
 </style>

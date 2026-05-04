@@ -73,11 +73,12 @@
   }
 
   .content {
-    background-color: #4a674940;
+    background-color: #4a674925;
     padding: 1rem;
-    border-radius: 8px;
-    border-top-right-radius: 0;
+    border-radius: 12px;
+    border-top-right-radius: 2px;
     max-width: 100%;
+    color: #1c1917;
   }
 
   .attachments-container {
@@ -89,11 +90,10 @@
   }
 
   .image-thumbnail {
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid #e7e5e4;
+    border-radius: 12px;
     overflow: hidden;
     background: #ffffff;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     max-width: 200px; /* Adjust size as needed to match the screenshot */
     transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
   }
@@ -119,11 +119,10 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid #e7e5e4;
+    border-radius: 12px;
     background: #ffffff;
     font-size: 0.85rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   .file-icon {

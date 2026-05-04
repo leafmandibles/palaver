@@ -160,11 +160,10 @@
   }
 
   .chat-input-container {
-    border: 1px solid #e5e7eb;
-    border-radius: 1.25rem;
+    border: 1px solid #e7e5e4;
+    border-radius: 12px;
     padding: 0.75rem 1rem;
     background: #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -246,7 +245,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #6b7280;
+    color: #78716c;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -297,8 +296,8 @@
   }
 
   .mode {
-    color: #3b82f6; /* A nice blue for the mode */
-    font-weight: 500;
+    color: #4a6749; /* Sage green for the mode */
+    font-weight: 600;
   }
 
   .separator {

@@ -401,7 +401,8 @@
     display: inline-block;
     margin-bottom: 1rem;
     text-decoration: none;
-    color: #0066cc;
+    color: #4a6749;
+    font-weight: 500;
   }
   .back-link:hover {
     text-decoration: underline;
@@ -444,7 +445,7 @@
     font-size: 2em;
     font-weight: bold;
     font-family: inherit;
-    border: 1px solid #0066cc;
+    border: 1px solid #729672;
     border-radius: 4px;
     padding: 2px 4px;
     outline: none;
@@ -457,15 +458,16 @@
   }
   .collapse-btn {
     padding: 0.25rem 0.75rem;
-    background: #e9ecef;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
+    background: #f5f5f4;
+    border: 1px solid #e7e5e4;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 0.85rem;
-    color: #495057;
+    color: #44403c;
+    transition: all 0.2s;
   }
   .collapse-btn:hover {
-    background: #dee2e6;
+    background: #e7e5e4;
   }
   .error {
     color: red;
@@ -481,7 +483,7 @@
     bottom: 0;
     padding: 1rem 0;
     /* Add a subtle gradient or solid color to mask messages scrolling behind it */
-    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 20%, #ffffff 100%);
+    background: linear-gradient(to bottom, rgba(250,250,250,0) 0%, rgba(250,250,250,0.9) 20%, #fafafa 100%);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
