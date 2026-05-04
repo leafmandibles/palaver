@@ -1,5 +1,5 @@
 <script>
-  import { onMount, setContext } from 'svelte';
+  import { onMount, onDestroy, setContext } from 'svelte';
   import { SessionController } from './controllers/SessionController.svelte.js';
   import UserMessage from './components/UserMessage.svelte';
   import AssistantMessage from './components/AssistantMessage.svelte';
@@ -11,6 +11,7 @@
   const ctrl = new SessionController();
 
   let forceScroll = $state(false);
+  let initialScrollDone = $state(false);
 
   let showModelSelector = $state(false);
   let selectorType = $state('mode'); // 'mode', 'model', or 'provider'
@@ -73,13 +74,13 @@
     }
   });
 
-  $effect(() => {
-    if (params.session_id) {
-      ctrl.load(params.session_id);
-    }
-    return () => {
-      ctrl.unsubscribeFromEvents();
-    };
+  // Initialize the session (runs once on mount / param change via svelte-spa-router)
+  if (params.session_id) {
+    ctrl.load(params.session_id);
+  }
+
+  onDestroy(() => {
+    ctrl.unsubscribeFromEvents();
   });
 
   function isNearBottom() {
@@ -96,8 +97,17 @@
     const _messages = ctrl.messages;
     const _streamingSize = ctrl.streamingParts?.size;
     const _isWorking = ctrl.isWorking;
+    const _loading = ctrl.loading;
 
-    if (forceScroll || isNearBottom()) {
+    // Force scroll exactly once after the initial fetch finishes
+    if (!initialScrollDone && !_loading && (_messages.length > 0 || _streamingSize > 0)) {
+      setTimeout(() => {
+        scrollToBottom();
+        initialScrollDone = true;
+      }, 0);
+    } 
+    // Normal auto-scroll behavior
+    else if (forceScroll || isNearBottom()) {
       // Use setTimeout to ensure DOM has updated before scrolling
       setTimeout(() => scrollToBottom(), 0);
     }
@@ -173,6 +183,93 @@
       output: cost?.output ?? null
     };
   });
+
+  function getMessageAgent(message) {
+    if (message.id?.toString().startsWith('temp-')) return currentMode;
+    return message.info?.agent || message.agent;
+  }
+
+  function shouldShowAgentDivider(messages, index) {
+    const msg = messages[index];
+    const isUser = msg.info?.role === 'user' || msg.info?.type === 'UserMessage' || msg.info?.role === 'UserMessage';
+    if (!isUser) return false;
+
+    const currentAgent = getMessageAgent(msg);
+    if (!currentAgent) return false;
+
+    // Find the previous user message
+    let prevUserAgent = null;
+    for (let i = index - 1; i >= 0; i--) {
+      const pMsg = messages[i];
+      const pIsUser = pMsg.info?.role === 'user' || pMsg.info?.type === 'UserMessage' || pMsg.info?.role === 'UserMessage';
+      if (pIsUser) {
+        prevUserAgent = getMessageAgent(pMsg);
+        break;
+      }
+    }
+
+    return currentAgent !== prevUserAgent;
+  }
+  function formatFilePath(fullPath) {
+    if (!fullPath) return 'unknown';
+    if (typeof fullPath !== 'string') fullPath = String(fullPath);
+    const parts = fullPath.split(/[/\\]/);
+    if (parts.length >= 2) {
+      return parts.slice(-2).join('/');
+    }
+    return fullPath;
+  }
+
+  function getPreviousToolCalls(messages, index) {
+    let targetAgent = null;
+    for (let i = index - 1; i >= 0; i--) {
+      const msg = messages[i];
+      const isUser = msg.info?.role === 'user' || msg.info?.type === 'UserMessage' || msg.info?.role === 'UserMessage';
+      if (isUser) {
+        targetAgent = getMessageAgent(msg);
+        break;
+      }
+    }
+
+    if (!targetAgent) return [];
+
+    let tools = [];
+    for (let i = index - 1; i >= 0; i--) {
+      const msg = messages[i];
+      const isUser = msg.info?.role === 'user' || msg.info?.type === 'UserMessage' || msg.info?.role === 'UserMessage';
+      
+      if (isUser) {
+        const agent = getMessageAgent(msg);
+        if (agent && agent !== targetAgent) {
+          break;
+        }
+      } else {
+        if (msg.parts) {
+          for (const part of msg.parts) {
+            if (part.type === 'tool') {
+              const toolName = part.tool || part.name || part.toolName;
+              if (['read', 'edit', 'write'].includes(toolName)) {
+                let filePath = 'unknown';
+                const args = part.state?.input || part.args;
+                if (args) {
+                  try {
+                    const parsedArgs = typeof args === 'string' ? JSON.parse(args) : args;
+                    filePath = parsedArgs.filePath || parsedArgs.path || 'unknown';
+                  } catch (e) {}
+                }
+                tools.push({
+                  tool: toolName,
+                  file: formatFilePath(filePath),
+                  messageId: msg.info?.id || msg.id
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+    return tools.reverse();
+  }
 </script>
 
 <div class="session-container">
@@ -213,12 +310,29 @@
   {:else}
     <div class="messages">
       {#if ctrl.messages && ctrl.messages.length > 0}
-        {#each ctrl.messages as message}
-          {#if message.info?.role === 'user' || message.info?.type === 'UserMessage' || message.info?.role === 'UserMessage'}
-            <UserMessage parts={message.parts || []} />
-          {:else}
-            <AssistantMessage parts={message.parts || []} onFork={() => ctrl.forkSession(params.session_id, message.info?.id || message.id)} />
-          {/if}
+        {#each ctrl.messages as message, i}
+          <div id="msg-{message.info?.id || message.id}">
+            {#if message.info?.role === 'user' || message.info?.type === 'UserMessage' || message.info?.role === 'UserMessage'}
+              {#if shouldShowAgentDivider(ctrl.messages, i)}
+                {@const prevTools = getPreviousToolCalls(ctrl.messages, i)}
+                {#if prevTools.length > 0}
+                  <div class="tool-summary">
+                    {#each prevTools as t}
+                      <div class="tool-summary-item">
+                        <button class="tool-badge" onclick={() => document.getElementById(`msg-${t.messageId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>{t.tool}</button> : <span class="tool-file">{t.file}</span>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+                <div class="agent-divider">
+                  <span class="agent-name">{getMessageAgent(message)}</span>
+                </div>
+              {/if}
+              <UserMessage parts={message.parts || []} />
+            {:else}
+              <AssistantMessage parts={message.parts || []} onFork={() => ctrl.forkSession(params.session_id, message.info?.id || message.id)} />
+            {/if}
+          </div>
         {/each}
       {:else}
         <p>No messages in this session.</p>
@@ -346,5 +460,55 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+  }
+  .agent-divider {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 1.5rem 0 0.5rem 0;
+    padding: 0.25rem 0.5rem;
+    background-color: #729672;
+    border-bottom: 1px solid #5a7b5a;
+    border-radius: 4px;
+  }
+  .agent-divider .agent-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+  }
+  .tool-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0.5rem 0;
+    align-items: center;
+  }
+  .tool-summary-item {
+    display: flex;
+    align-items: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+  .tool-badge {
+    border: 1px solid #9ca3af;
+    border-radius: 4px;
+    padding: 0.1rem 0.3rem;
+    margin-right: 0.25rem;
+    background-color: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    transition: background-color 0.2s;
+  }
+  .tool-badge:hover {
+    background-color: #f3f4f6;
+  }
+  .tool-file {
+    color: #4b5563;
   }
 </style>

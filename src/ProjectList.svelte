@@ -90,7 +90,7 @@ Hello
     margin: 1.5rem 0 0.5rem 0;
     font-size: 1.2rem;
     color: #333;
-    border-bottom: 2px solid #eee;
+    /*border-bottom: 2px solid #eee;*/
     padding-bottom: 0.25rem;
   }
   ul {
