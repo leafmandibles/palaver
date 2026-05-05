@@ -7,8 +7,10 @@
     
   const sessionListCtrl = new SessionListController();
   const activeSessionIds = $derived(new Set());
+  let selectedWorktrees = $state(new Set());
 
   async function refreshSessions(projectId) {
+    await Promise.resolve();
     await sessionListCtrl.refresh(projectId);
   }
 
@@ -17,8 +19,49 @@
   const sortedSessions = $derived(
     [...sessionListCtrl.sessions].sort((a, b) => (b.time?.updated || 0) - (a.time?.updated || 0))
   );
+
+  function getSessionWorktree(session) {
+    if (!session.directory || !sessionListCtrl.project) return 'root';
+
+    const pathInfo = getPathInfo(session.directory, sessionListCtrl.project.worktree);
+    return pathInfo?.worktree ? pathInfo.worktree : 'root';
+  }
+
+  function toggleWorktree(worktree) {
+    const nextSelectedWorktrees = new Set(selectedWorktrees);
+    if (nextSelectedWorktrees.has(worktree)) {
+      nextSelectedWorktrees.delete(worktree);
+    } else {
+      nextSelectedWorktrees.add(worktree);
+    }
+    selectedWorktrees = nextSelectedWorktrees;
+  }
+
+  const filteredSessions = $derived.by(() => {
+    if (selectedWorktrees.size === 0) return sortedSessions;
+
+    return sortedSessions.filter(session => selectedWorktrees.has(getSessionWorktree(session)));
+  });
   
-  const groupedSessions = $derived(groupItemsByDate(sortedSessions));
+  const groupedSessions = $derived(groupItemsByDate(filteredSessions));
+
+  const globalWorktrees = $derived.by(() => {
+    const worktrees = new Set();
+    if (!sessionListCtrl.project) return [];
+    for (const session of sortedSessions) {
+      if (session.directory) {
+        const pathInfo = getPathInfo(session.directory, sessionListCtrl.project.worktree);
+        worktrees.add(pathInfo?.worktree ? pathInfo.worktree : 'root');
+      } else {
+        worktrees.add('root');
+      }
+    }
+    return Array.from(worktrees).sort((a, b) => {
+      if (a === 'root') return -1;
+      if (b === 'root') return 1;
+      return a.localeCompare(b);
+    });
+  });
 </script>
 
 <div>
@@ -40,8 +83,23 @@
       <p>No sessions found for this project.</p>
     {:else}
       <div class="session-groups">
-        {#each groupedSessions as group}
-          <h3 class="date-header">{group.date}</h3>
+        {#each groupedSessions as group, i}
+          <div class="date-header-container">
+            <h3 class="date-header">{group.date}</h3>
+            {#if i === 0 && globalWorktrees.length > 0}
+              <div class="global-worktrees">
+                {#each globalWorktrees as wt}
+                  <button
+                    class="worktree-pill"
+                    class:selected={selectedWorktrees.has(wt)}
+                    onclick={() => toggleWorktree(wt)}
+                  >
+                    {wt}
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </div>
           <ul>
             {#each group.items as session}
               <li class:active={activeSessionIds.has(session.id)}>
@@ -114,12 +172,41 @@
   .new-session-btn:hover {
     text-decoration: underline;
   }
-  .date-header {
+  .date-header-container {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
     margin: 1.5rem 0 0.5rem 0;
-    font-size: 1.2rem;
-    color: #333;
     border-bottom: 2px solid #eee;
     padding-bottom: 0.25rem;
+  }
+  .date-header {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  .global-worktrees {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .worktree-pill {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    font-size: 0.85rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .worktree-pill:hover {
+    background-color: #e5e7eb;
+  }
+  .worktree-pill.selected {
+    background-color: #dbeafe;
+    border-color: #60a5fa;
+    color: #1d4ed8;
   }
   ul {
     list-style-type: none;
