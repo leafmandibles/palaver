@@ -3,22 +3,30 @@
   import { ProjectListController } from './controllers/ProjectListController.svelte.js';
   import { GeolocationState } from './utils/geolocation.svelte.js';
   import { summarizePath } from './utils/path.js';
-  
+  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
+
   const ctrl = new ProjectListController();
-  const globalEvent = getContext('global.events');
-  const geo = new GeolocationState();
+  
+  
+  const globalEvent = new GlobalEvents();
+  
+  
+  // const geo = new GeolocationState();
 
   const activeProjectIds = $derived(new Set((globalEvent?.events || []).map(e => e.project)));
 
   // Run once on initialization (no reactive dependencies needed here)
   let initializationPromise = ctrl.load();
+  console.log("ProjectList::script ", events, globalEvent)
 </script>
 
 <div>
+  
+
   <div class="header">
     <h1>Opencode Projects</h1>
-    <a href="#/events" class="events-link">View Live Events</a>
-    {#if geo.location}
+    
+    <!--{#if geo.location}
       <span class="location-info">
         📍 {geo.location.latitude.toFixed(4)}, {geo.location.longitude.toFixed(4)}
       </span>
@@ -26,7 +34,7 @@
       <span class="location-info error">
         📍 {geo.error}
       </span>
-    {/if}
+    {/if}-->
   </div>
   {#await initializationPromise}
     <p>Loading projects...</p>
