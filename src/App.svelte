@@ -5,14 +5,15 @@
   import SessionHistory from './SessionHistory.svelte';
   import Session from './Session.svelte';
   import Events from './Events.svelte';
+  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
   
   
 
   // Instantiate the single GlobalEvents listener here.
-  
+  const globalEvents = new GlobalEvents();
   
   // Provide it to all child routes via context.
-  
+  setContext('global.events', globalEvents);
 
   const routes = {
     '/': ProjectList,

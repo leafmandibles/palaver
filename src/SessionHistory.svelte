@@ -1,13 +1,13 @@
 <script>
+  import { getContext } from 'svelte';
   import { SessionListController } from './controllers/SessionListController.svelte.js';
-  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
   import { groupItemsByDate } from './utils/date.js';
   import { summarizePath, getPathInfo } from './utils/path.js';
   
   let { params } = $props();
-  
+   
   const sessionListCtrl = new SessionListController();
-  const globalEvent = new GlobalEvents();
+  const globalEvent = getContext('global.events');
 
   const activeSessionIds = $derived(
     new Set(
@@ -17,14 +17,11 @@
     )
   );
 
-  $effect(() => {
-    return () => {
-      globalEvent.destroy();
-    };
-  });
+  async function refreshSessions(projectId) {
+    await sessionListCtrl.refresh(projectId);
+  }
 
-  // Fire-once initialization (svelte-spa-router remounts component on param changes)
-  sessionListCtrl.refresh(params.project_id);
+  const refreshPromise = $derived(refreshSessions(params.project_id));
 
   const sortedSessions = $derived(
     [...sessionListCtrl.sessions].sort((a, b) => (b.time?.updated || 0) - (a.time?.updated || 0))
@@ -40,14 +37,17 @@
     <button class="new-session-btn" onclick={() => sessionListCtrl.createSession(params.project_id)}>[new]</button>
   </div>
 
-  {#if sessionListCtrl.loading}
+  {#await refreshPromise}
     <p>Loading sessions...</p>
-  {:else if sessionListCtrl.error}
-    <p style="color: red;">Error loading sessions: {sessionListCtrl.error}</p>
-    <button onclick={() => sessionListCtrl.refresh(params.project_id)}>Try Again</button>
-  {:else if sortedSessions.length === 0}
-    <p>No sessions found for this project.</p>
-  {:else}
+  {:then}
+    {#if sessionListCtrl.loading}
+      <p>Loading sessions...</p>
+    {:else if sessionListCtrl.error}
+      <p style="color: red;">Error loading sessions: {sessionListCtrl.error}</p>
+      <button onclick={() => sessionListCtrl.refresh(params.project_id)}>Try Again</button>
+    {:else if sortedSessions.length === 0}
+      <p>No sessions found for this project.</p>
+    {:else}
       <div class="session-groups">
         {#each groupedSessions as group}
           <h3 class="date-header">{group.date}</h3>
@@ -91,6 +91,7 @@
         {/each}
       </div>
     {/if}
+  {/await}
 </div>
 
 <style>

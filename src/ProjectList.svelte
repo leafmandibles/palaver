@@ -1,23 +1,16 @@
 <script>
   import { getContext } from 'svelte';
   import { ProjectListController } from './controllers/ProjectListController.svelte.js';
-  import { GeolocationState } from './utils/geolocation.svelte.js';
   import { summarizePath } from './utils/path.js';
-  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
 
   const ctrl = new ProjectListController();
+  const globalEvent = getContext('global.events');
   
   
-  const globalEvent = new GlobalEvents();
-  
-  
-  // const geo = new GeolocationState();
-
   const activeProjectIds = $derived(new Set((globalEvent?.events || []).map(e => e.project)));
 
   // Run once on initialization (no reactive dependencies needed here)
   let initializationPromise = ctrl.load();
-  console.log("ProjectList::script ", events, globalEvent)
 </script>
 
 <div>
@@ -25,16 +18,6 @@
 
   <div class="header">
     <h1>Opencode Projects</h1>
-    
-    <!--{#if geo.location}
-      <span class="location-info">
-        📍 {geo.location.latitude.toFixed(4)}, {geo.location.longitude.toFixed(4)}
-      </span>
-    {:else if geo.error}
-      <span class="location-info error">
-        📍 {geo.error}
-      </span>
-    {/if}-->
   </div>
   {#await initializationPromise}
     <p>Loading projects...</p>
@@ -79,28 +62,6 @@
   }
   .header h1 {
     margin: 0;
-  }
-  .events-link {
-    margin-left: 1rem;
-    font-size: 0.9rem;
-    color: #0066cc;
-    text-decoration: none;
-    border: 1px solid #0066cc;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    transition: all 0.2s;
-  }
-  .events-link:hover {
-    background: #f0f7ff;
-    text-decoration: none;
-  }
-  .location-info {
-    font-size: 0.9rem;
-    color: #666;
-    margin-left: auto;
-  }
-  .location-info.error {
-    color: #cc0000;
   }
   .date-header {
     margin: 1.5rem 0 0.5rem 0;
