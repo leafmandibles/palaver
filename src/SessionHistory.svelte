@@ -1,21 +1,12 @@
 <script>
-  import { getContext } from 'svelte';
   import { SessionListController } from './controllers/SessionListController.svelte.js';
   import { groupItemsByDate } from './utils/date.js';
   import { summarizePath, getPathInfo } from './utils/path.js';
-  
-  let { params } = $props();
    
+  let { params } = $props();
+    
   const sessionListCtrl = new SessionListController();
-  const globalEvent = getContext('global.events');
-
-  const activeSessionIds = $derived(
-    new Set(
-      globalEvent.events
-        .filter(e => e.project === params.project_id && e.payload?.properties?.sessionID)
-        .map(e => e.payload.properties.sessionID)
-    )
-  );
+  const activeSessionIds = $derived(new Set());
 
   async function refreshSessions(projectId) {
     await sessionListCtrl.refresh(projectId);

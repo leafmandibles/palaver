@@ -167,11 +167,6 @@ export class SessionController {
       const { part } = data.properties;
       this.streamingParts.set(part.id, part);
     } else if (eventType === 'session.idle') {
-      console.log(`[SessionController::processEvent] - session idle received for ${sessionId}`);
-      this.isWorking = false;
-      this.workingStatus = "";
-      this.streamingParts.clear();
-      this.load(sessionId, true);
       return;
     }
 
