@@ -4,9 +4,16 @@ Palaver is a thin stateless session manager for browsing and contunuing  your lo
 
 > It connects to a local Opencode server, shows available projects and sessions, streams live session activity, and lets you keep chatting inside an existing session.
 
-To install 
+## Usage
 
-> npx install palaver 
+Start the server and UI:
+> npx palaver start
+
+Launch the terminal chat (optional):
+> npx palaver chat (or use `opencode` directly)
+
+Access the Web UI:
+> http://localhost:4173
 ### Project View 
 
 <img width="1706" height="357" alt="image" src="https://github.com/user-attachments/assets/d69263eb-d8e0-4dde-b29e-fe4f4d8bd3c1" />
