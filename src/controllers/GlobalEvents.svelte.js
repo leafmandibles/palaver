@@ -29,15 +29,18 @@ export class GlobalEvents {
         const { project, payload } = event;
         if (!project || !payload) continue;
 
+        const actualPayload = payload.type === 'sync' ? payload.syncEvent : payload;
+        if (!actualPayload) continue;
+
         if (
-          payload.type === 'message.updated' || 
-          payload.type === 'message.part.delta' || 
-          payload.type === 'message.part.updated' ||
-          (payload.type === 'session.status' && payload.properties?.status?.type === 'busy')
+          actualPayload.type?.startsWith('message.updated') || 
+          actualPayload.type?.startsWith('message.part.delta') || 
+          actualPayload.type?.startsWith('message.part.updated') ||
+          (actualPayload.type === 'session.status' && actualPayload.properties?.status?.type === 'busy')
         ) {
-          console.log(`[GlobalEvents] Detected active event for project ${project}:`, payload.type);
+          console.log(`[GlobalEvents] Detected active event for project ${project}:`, actualPayload.type);
           
-          const record = { project, type: payload.type, timestamp: Date.now(), payload };
+          const record = { project, type: actualPayload.type, timestamp: Date.now(), payload: actualPayload };
           
           // Append to array
           this.events.push(record);
