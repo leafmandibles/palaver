@@ -20,36 +20,41 @@ export class GlobalEvents {
       const globalEventsStream = await this.client.global.event({ signal });
       console.log("[GlobalEvents] Connected to global event stream successfully");
       
-      for await (const event of globalEventsStream.stream) {
-        if (signal.aborted) {
-          console.log("[GlobalEvents] Signal aborted, breaking event loop");
-          break;
-        }
-        console.log(`[GlobalEvents] Detected event: `, event);
-        const { project, payload } = event;
-        if (!project || !payload) continue;
+        for await (const event of globalEventsStream.stream) {
+          if (signal.aborted) {
+            console.log("[GlobalEvents] Signal aborted, breaking event loop");
+            break;
+          }
+          console.log(`[GlobalEvents] Detected event: `, event);
+          const { project, payload } = event;
+          if (!project || !payload) continue;
 
-        if (
-          payload.type === 'message.updated' || 
-          payload.type === 'message.part.delta' || 
-          payload.type === 'message.part.updated' ||
-          (payload.type === 'session.status' && payload.properties?.status?.type === 'busy')
-        ) {
-          console.log(`[GlobalEvents] Detected active event for project ${project}:`, payload.type);
-          
-          const record = { project, type: payload.type, timestamp: Date.now(), payload };
-          
-          // Append to array
-          this.events.push(record);
+          const actualPayload = payload.type === 'sync' ? payload.syncEvent : payload;
+          if (!actualPayload) continue;
 
-          // Expire after 60s
-          const timerId = setTimeout(() => {
-            this.events = this.events.filter(e => e !== record);
-            this.#expirationTimers.delete(timerId);
-          }, 60000);
-          this.#expirationTimers.add(timerId);
+          if (
+            actualPayload.type?.startsWith('message.updated') || 
+            actualPayload.type?.startsWith('message.part.delta') || 
+            actualPayload.type?.startsWith('message.part.updated') ||
+            (actualPayload.type === 'session.status' && actualPayload.properties?.status?.type === 'busy')
+          ) {
+            console.log(`[GlobalEvents] Detected active event for project ${project}:`, actualPayload.type);
+            
+            const record = { id: crypto.randomUUID(), project, type: actualPayload.type, timestamp: Date.now(), payload: actualPayload };
+            
+            // Append to array immutably to guarantee Svelte 5 reactivity
+            this.events = [...this.events, record];
+
+            // Expire after 60s
+            const timerId = setTimeout(() => {
+              this.events = this.events.filter(e => e !== record);
+              this.#expirationTimers.delete(timerId);
+            }, 60000);
+            this.#expirationTimers.add(timerId);
+          }
+      
         }
-      }
+      
       console.log("[GlobalEvents] Global event stream ended cleanly");
     } catch (e) {
       if (!signal.aborted) {

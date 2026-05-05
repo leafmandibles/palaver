@@ -1,13 +1,7 @@
 <script>
-  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
+  import { getContext } from 'svelte';
 
-  const globalEvent = new GlobalEvents();
-
-  $effect(() => {
-    return () => {
-      globalEvent.destroy();
-    };
-  });
+  const globalEvent = getContext('global.events');
 </script>
 
 <div class="events-container">
@@ -27,7 +21,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each [...globalEvent.events].reverse() as event (event.timestamp + '_' + event.project + '_' + event.type)}
+        {#each [...(globalEvent?.events || [])].reverse() as event (event.id)}
           <tr>
             <td class="time">{new Date(event.timestamp).toLocaleTimeString()}</td>
             <td class="project">{event.project}</td>
@@ -37,7 +31,7 @@
             </td>
           </tr>
         {/each}
-        {#if globalEvent.events.length === 0}
+        {#if !globalEvent?.events || globalEvent.events.length === 0}
           <tr>
             <td colspan="4" class="empty">Waiting for events...</td>
           </tr>
@@ -61,7 +55,7 @@
   }
   .back-link {
     text-decoration: none;
-    color: #0066cc;
+    color: var(--color-link);
     font-weight: bold;
   }
   .back-link:hover {
@@ -71,7 +65,7 @@
     overflow-x: auto;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px var(--shadow-md);
   }
   table {
     width: 100%;
@@ -79,20 +73,20 @@
   }
   th, td {
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border);
     text-align: left;
     vertical-align: top;
   }
   th {
-    background-color: #f8f9fa;
+    background-color: var(--color-bg-muted);
     font-weight: 600;
-    color: #333;
+    color: var(--color-text-base);
     position: sticky;
     top: 0;
   }
   .time {
     white-space: nowrap;
-    color: #666;
+    color: var(--color-text-muted);
   }
   .project {
     font-family: monospace;
@@ -100,7 +94,7 @@
   }
   .type {
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--color-text-base);
   }
   .payload pre {
     margin: 0;
@@ -109,14 +103,14 @@
     font-size: 0.8rem;
     max-height: 200px;
     overflow-y: auto;
-    background: #f8f9fa;
+    background: var(--color-bg-muted);
     padding: 0.5rem;
     border-radius: 4px;
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--color-border);
   }
   .empty {
     text-align: center;
-    color: #888;
+    color: var(--color-text-subtle);
     padding: 2rem !important;
     font-style: italic;
   }

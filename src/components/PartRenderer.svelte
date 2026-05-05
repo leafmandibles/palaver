@@ -43,7 +43,7 @@
     margin-bottom: 0;
   }
   .fallback {
-    background: #f1f3f5;
+    background: var(--color-bg-muted);
     padding: 0.5rem;
     border-radius: 4px;
     font-size: 0.85rem;

@@ -42,7 +42,7 @@
 
 <style>
   .collapsible {
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     margin-top: 0.5rem;
     background: white;
@@ -53,15 +53,15 @@
     align-items: center;
     width: 100%;
     padding: 0.5rem 0.75rem;
-    background: #f8f9fa;
+    background: var(--color-bg-muted);
     border: none;
     text-align: left;
     cursor: pointer;
     font-weight: 500;
-    color: #495057;
+    color: var(--color-text-muted);
   }
   .toggle-btn:hover {
-    background: #e9ecef;
+    background: var(--color-bg-muted);
   }
   .icon {
     display: inline-block;
@@ -74,13 +74,13 @@
   }
   .preview-content {
     padding: 0.5rem 0.75rem;
-    border-top: 1px dashed #dee2e6;
+    border-top: 1px dashed var(--color-border);
     font-size: 0.9em;
-    color: #666;
-    background: #fdfdfd;
+    color: var(--color-text-muted);
+    background: var(--color-bg-muted);
   }
   .content {
     padding: 0.75rem;
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid var(--color-border);
   }
 </style>

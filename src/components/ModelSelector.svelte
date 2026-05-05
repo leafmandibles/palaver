@@ -105,10 +105,10 @@
 <style>
   .selector-container {
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
     border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 6px -1px var(--shadow-sm), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -119,10 +119,10 @@
     display: flex;
     align-items: center;
     padding: 0.75rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--color-border);
     gap: 0.5rem;
-    color: #9ca3af;
-    background: #f9fafb;
+    color: var(--color-text-subtle);
+    background: var(--color-bg-muted);
   }
 
   .search-box input {
@@ -131,7 +131,7 @@
     outline: none;
     width: 100%;
     font-size: 0.9rem;
-    color: #374151;
+    color: var(--color-text-muted);
   }
 
   .list-container {
@@ -144,7 +144,7 @@
     text-align: left;
     background: none;
     border: none;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--color-bg-muted);
     padding: 0.75rem;
     cursor: pointer;
     display: flex;
@@ -154,35 +154,35 @@
   }
 
   .list-item:hover {
-    background: #f9fafb;
+    background: var(--color-bg-muted);
   }
 
   .list-item.selected {
-    background: #eff6ff;
+    background: var(--color-bg-surface-active);
   }
 
   .item-name {
     font-weight: 500;
-    color: #374151;
+    color: var(--color-text-muted);
     font-size: 0.9rem;
   }
 
   .item-id {
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: var(--color-text-subtle);
     margin-top: 0.1rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   }
 
   .check {
-    color: #3b82f6;
+    color: var(--color-link);
     flex-shrink: 0;
   }
 
   .empty-state {
     padding: 1.5rem;
     text-align: center;
-    color: #9ca3af;
+    color: var(--color-text-subtle);
     font-size: 0.9rem;
   }
 </style>

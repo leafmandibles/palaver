@@ -12,7 +12,7 @@
     if (highlighter) return highlighter;
     if (!initPromise) {
       initPromise = createHighlighter({
-        themes: ['github-dark'],
+        themes: ['catppuccin-mocha'],
         langs: ['javascript', 'typescript', 'html', 'css', 'python', 'bash', 'svelte', 'json', 'yaml', 'markdown']
       }).then(h => {
         highlighter = h;
@@ -22,7 +22,7 @@
               const lang = token.lang || 'text';
               let codeHtml;
               try {
-                codeHtml = highlighter.codeToHtml(token.text, { lang, theme: 'github-dark' });
+                codeHtml = highlighter.codeToHtml(token.text, { lang, theme: 'catppuccin-mocha' });
               } catch (e) {
                 codeHtml = `<pre><code>${token.text}</code></pre>`;
               }
@@ -131,7 +131,7 @@
   .copy-response-btn {
     background: none;
     border: none;
-    color: #9ca3af;
+    color: var(--color-text-subtle);
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
@@ -142,14 +142,14 @@
   }
   
   .copy-response-btn:hover {
-    color: #374151;
-    background-color: #f3f4f6;
+    color: var(--color-text-muted);
+    background-color: var(--color-bg-muted);
   }
 
   .fork-btn {
     background: none;
     border: none;
-    color: #9ca3af;
+    color: var(--color-text-subtle);
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
@@ -163,15 +163,15 @@
   }
 
   .fork-btn:hover {
-    color: #374151;
-    background-color: #f3f4f6;
+    color: var(--color-text-muted);
+    background-color: var(--color-bg-muted);
   }
 
   .prose {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 16px;
     line-height: 1.65;
-    color: #333;
+    color: var(--color-text-base);
     letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
   }
@@ -182,7 +182,7 @@
   .prose :global(h3) {
     font-weight: 600;
     letter-spacing: -0.025em;
-    color: var(--text-heading, #18181b);
+    color: var(--text-heading, var(--color-text-base));
     margin: 1.4em 0 0.4em;
   }
   .prose :global(h1) { font-size: 1.25rem; }
@@ -194,23 +194,24 @@
     margin: 0.6em 0;
   }
 
-  /* Links — no blue */
+  /* Links */
   .prose :global(a) {
-    color: var(--text-primary, #27272a);
+    color: var(--color-link);
     text-decoration: underline;
-    text-decoration-color: rgba(0,0,0,0.25);
+    text-decoration-color: var(--color-link);
     text-underline-offset: 3px;
-    transition: text-decoration-color 0.15s;
+    transition: color 0.15s, text-decoration-color 0.15s;
   }
   .prose :global(a:hover) {
-    text-decoration-color: rgba(0,0,0,0.7);
+    color: var(--color-link-hover);
+    text-decoration-color: var(--color-link-hover);
   }
 
   /* Inline code — neutral, not blue */
   .prose :global(:not(pre) > code) {
     font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
-    background: #f3f3f3;
-    color: var(--text-code, #3f3f46);
+    background: #1e1e1e;
+    color: #d4d4d4;
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.875em;
@@ -221,8 +222,8 @@
   .prose :global(.code-block-wrapper) {
     margin: 1em 0;
     border-radius: 8px;
-    background: #1e1e1e;
-    border: 1px solid rgba(0,0,0,0.06);
+    background: #1f2937;
+    border: 1px solid #3b4556;
     overflow: hidden;
   }
 
@@ -231,12 +232,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.4rem 1rem;
-    background: #2d2d2d;
-    border-bottom: 1px solid #3d3d3d;
+    background: #273244;
+    border-bottom: 1px solid #3b4556;
   }
 
   .prose :global(.code-block-lang) {
-    color: #9ca3af;
+    color: #cbd5e1;
     font-size: 0.75rem;
     font-family: 'Inter', -apple-system, sans-serif;
   }
@@ -244,7 +245,7 @@
   .prose :global(.copy-code-btn) {
     background: none;
     border: none;
-    color: #9ca3af;
+    color: #cbd5e1;
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
@@ -255,7 +256,7 @@
   }
 
   .prose :global(.copy-code-btn:hover) {
-    color: #ffffff;
+    color: #f8fafc;
   }
 
   .prose :global(pre) {
@@ -271,6 +272,7 @@
     font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
     font-size: 0.875em;
     line-height: 1.65;
+    color: #e5e7eb;
     background: none;
     border: none;
     padding: 0;
@@ -287,21 +289,21 @@
     margin-bottom: 0.3em;
   }
   .prose :global(li strong) {
-    color: var(--text-heading, #18181b);
+    color: var(--text-heading, var(--color-text-base));
   }
 
   /* Bold */
   .prose :global(strong) {
     font-weight: 600;
-    color: var(--text-heading, #18181b);
+    color: var(--text-heading, var(--color-text-base));
   }
 
   /* Blockquote */
   .prose :global(blockquote) {
-    border-left: 2px solid rgba(0,0,0,0.1);
+    border-left: 2px solid var(--shadow-md);
     padding-left: 1em;
     margin: 1em 0;
-    color: var(--text-muted, #71717a);
+    color: var(--text-muted, var(--color-text-muted));
   }
 
   /* Horizontal rule */

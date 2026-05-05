@@ -4,6 +4,7 @@
   import SessionHistory from './SessionHistory.svelte';
   import Session from './Session.svelte';
   import Events from './Events.svelte';
+  import ThemeSwitcher from './components/ThemeSwitcher.svelte';
 
   const routes = {
     '/': ProjectList,
@@ -14,12 +15,20 @@
 </script>
 
 <main>
+  <header class="app-header">
+    <div class="spacer"></div>
+    <ThemeSwitcher />
+  </header>
   <Router {routes} />
 </main>
 
 <style>
   main {
     padding: 1rem;
-    font-family: sans-serif;
+  }
+  .app-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
   }
 </style>

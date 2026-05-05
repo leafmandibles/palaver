@@ -12,8 +12,8 @@
 <style>
   .agent-bar {
     width: 100%;
-    background-color: #e0f2fe; /* Light blue block color */
-    color: #0369a1; /* Darker blue text */
+    background-color: var(--color-bg-muted); /* Light blue block color */
+    color: var(--color-link); /* Darker blue text */
     padding: 0.5rem 1rem;
     border-radius: 4px;
     margin: 0.5rem 0;

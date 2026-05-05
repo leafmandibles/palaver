@@ -1,0 +1,46 @@
+/* src/styles/themes/utilitarian.css */
+:root[data-theme="utilitarian"] {
+  /* Colors - Backgrounds */
+  --color-bg-base: #1e1e1e; /* VS Code dark dark-grey */
+  --color-bg-surface: #252526;
+  --color-bg-surface-hover: #2a2d2e;
+  --color-bg-surface-active: #094771;
+  --color-bg-error: #3a1d1d;
+  --color-bg-muted: #333333;
+  
+  /* Colors - Text */
+  --color-text-base: #cccccc;
+  --color-text-muted: #858585;
+  --color-text-subtle: #6b6b6b;
+  --color-text-error: #f48771;
+  --color-text-button: #cccccc;
+  --color-text-button-hover: #ffffff;
+  
+  /* Colors - Accents & Borders */
+  --color-border: #404040;
+  --color-border-subtle: #303030;
+  --color-border-error: #f48771;
+  --color-accent: #007acc; /* VS Code blue */
+  --color-accent-muted: rgba(0, 122, 204, 0.4);
+  --color-accent-subtle: rgba(0, 122, 204, 0.1);
+  --color-link: #4daafc;
+  --color-link-hover: #7cd0ff;
+  --color-danger: #f14c4c;
+  --color-danger-hover: #d13a3a;
+  
+  /* Typography */
+  --font-body: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
+  /* Geometry & Depth */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-full: 2px;
+  --shadow-sm: none;
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-btn: none;
+  
+  /* Animation Details */
+  --transition-speed: 0.1s;
+}

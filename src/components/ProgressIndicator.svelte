@@ -5,8 +5,8 @@
 <div class="progress-indicator">
   <div class="spinner">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#9ca3af" class="star" />
-      <path d="M19.5 5.5L20.5 7.5L22.5 8.5L20.5 9.5L19.5 11.5L18.5 9.5L16.5 8.5L18.5 7.5L19.5 5.5Z" fill="#d1d5db" class="sparkle" />
+      <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="var(--color-text-subtle)" class="star" />
+      <path d="M19.5 5.5L20.5 7.5L22.5 8.5L20.5 9.5L19.5 11.5L18.5 9.5L16.5 8.5L18.5 7.5L19.5 5.5Z" fill="var(--color-border)" class="sparkle" />
     </svg>
   </div>
   <span class="text">{status}</span>
@@ -18,7 +18,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 1rem;
-    color: #6b7280; /* Tailwind gray-500 */
+    color: var(--color-text-subtle); /* Tailwind gray-500 */
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 0.95rem;
     margin-top: 1rem;
