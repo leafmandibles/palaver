@@ -13,7 +13,7 @@
   
 
   <div class="header">
-    <h1>Opencode Projects</h1>
+    <h1>Projects</h1>
   </div>
   {#await initializationPromise}
     <p>Loading projects...</p>
