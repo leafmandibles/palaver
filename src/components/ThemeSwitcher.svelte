@@ -2,8 +2,8 @@
   import { themeState } from '../lib/theme.svelte.js';
   
   const themes = [
-    { id: 'default', label: 'Default' },
-    { id: 'default-blue', label: 'Default Blue' },
+    { id: 'default-green', label: 'Default Green' },
+    { id: 'blue', label: 'Blue' },
     { id: 'brutalist', label: 'Brutalist' },
     { id: 'utilitarian', label: 'Utilitarian' }
   ];

@@ -1,25 +1,34 @@
 export function createThemeState() {
   // Check if we're in browser environment
   const isBrowser = typeof window !== 'undefined';
+
+  const themeAliases = {
+    default: 'default-green',
+    'default-blue': 'blue'
+  };
+
+  function normalizeTheme(themeName) {
+    return themeAliases[themeName] || themeName;
+  }
   
   // Try to get saved theme or default
   const getInitialTheme = () => {
     if (isBrowser) {
       const saved = localStorage.getItem('theme');
-      if (saved) return saved;
+      if (saved) return normalizeTheme(saved);
       
       // Could check system preference here if wanted
     }
-    return 'default';
+    return 'default-green';
   };
 
   let currentTheme = $state(getInitialTheme());
 
   function setTheme(themeName) {
-    currentTheme = themeName;
+    currentTheme = normalizeTheme(themeName);
     if (isBrowser) {
-      localStorage.setItem('theme', themeName);
-      document.documentElement.setAttribute('data-theme', themeName);
+      localStorage.setItem('theme', currentTheme);
+      document.documentElement.setAttribute('data-theme', currentTheme);
     }
   }
 
