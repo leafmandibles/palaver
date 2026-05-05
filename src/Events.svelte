@@ -1,13 +1,7 @@
 <script>
-  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
+  import { getContext } from 'svelte';
 
-  const globalEvent = new GlobalEvents();
-
-  $effect(() => {
-    return () => {
-      globalEvent.destroy();
-    };
-  });
+  const globalEvent = getContext('global.events');
 </script>
 
 <div class="events-container">
@@ -27,7 +21,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each [...globalEvent.events].reverse() as event (event.timestamp + '_' + event.project + '_' + event.type)}
+        {#each [...(globalEvent?.events || [])].reverse() as event (event.id)}
           <tr>
             <td class="time">{new Date(event.timestamp).toLocaleTimeString()}</td>
             <td class="project">{event.project}</td>
@@ -37,7 +31,7 @@
             </td>
           </tr>
         {/each}
-        {#if globalEvent.events.length === 0}
+        {#if !globalEvent?.events || globalEvent.events.length === 0}
           <tr>
             <td colspan="4" class="empty">Waiting for events...</td>
           </tr>

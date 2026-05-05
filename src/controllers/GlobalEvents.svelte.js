@@ -40,10 +40,10 @@ export class GlobalEvents {
         ) {
           console.log(`[GlobalEvents] Detected active event for project ${project}:`, actualPayload.type);
           
-          const record = { project, type: actualPayload.type, timestamp: Date.now(), payload: actualPayload };
+          const record = { id: crypto.randomUUID(), project, type: actualPayload.type, timestamp: Date.now(), payload: actualPayload };
           
-          // Append to array
-          this.events.push(record);
+          // Append to array immutably to guarantee Svelte 5 reactivity
+          this.events = [...this.events, record];
 
           // Expire after 60s
           const timerId = setTimeout(() => {
