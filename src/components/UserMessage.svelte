@@ -73,12 +73,12 @@
   }
 
   .content {
-    background-color: #4a674925;
+    background-color: var(--color-bg-surface-active);
     padding: 1rem;
     border-radius: 12px;
     border-top-right-radius: 2px;
     max-width: 100%;
-    color: #1c1917;
+    color: var(--color-text-base);
   }
 
   .attachments-container {
@@ -90,10 +90,10 @@
   }
 
   .image-thumbnail {
-    border: 1px solid #e7e5e4;
+    border: 1px solid var(--color-border-subtle);
     border-radius: 12px;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--color-bg-surface);
     max-width: 200px; /* Adjust size as needed to match the screenshot */
     transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
   }
@@ -104,7 +104,7 @@
 
   .image-thumbnail.clickable:hover {
     transform: scale(1.02);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px var(--shadow-md);
   }
 
   .image-thumbnail img {
@@ -119,9 +119,9 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
-    border: 1px solid #e7e5e4;
+    border: 1px solid var(--color-border-subtle);
     border-radius: 12px;
-    background: #ffffff;
+    background: var(--color-bg-surface);
     font-size: 0.85rem;
   }
 
@@ -131,7 +131,7 @@
 
   .file-name {
     font-family: monospace;
-    color: #4b5563;
+    color: var(--color-text-muted);
     max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;

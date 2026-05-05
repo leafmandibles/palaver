@@ -62,8 +62,7 @@
   .date-header {
     margin: 1.5rem 0 0.5rem 0;
     font-size: 1.2rem;
-    color: #333;
-    /*border-bottom: 2px solid #eee;*/
+    color: var(--color-text-base);
     padding-bottom: 0.25rem;
   }
   ul {
@@ -75,34 +74,36 @@
   }
   li {
     padding: 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-surface);
     flex: 1 1 300px;
     max-width: 450px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed), background-color var(--transition-speed), border-color var(--transition-speed);
     margin-bottom: 0;
   }
   li:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
+    background-color: var(--color-bg-surface-hover);
   }
   a {
     text-decoration: none;
-    color: #0066cc;
+    color: var(--color-link);
   }
   a:hover {
     text-decoration: underline;
+    color: var(--color-link-hover);
   }
   .text-muted {
-    color: #666;
+    color: var(--color-text-muted);
   }
 
   @keyframes subtle-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.1); border-color: #e0e0e0; background-color: #ffffff; }
-    50% { box-shadow: 0 0 10px 2px rgba(46, 204, 113, 0.4); border-color: #2ecc71; background-color: #e8f5e9; }
-    100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.1); border-color: #e0e0e0; background-color: #ffffff; }
+    0% { box-shadow: 0 0 0 0 var(--color-accent-subtle); border-color: var(--color-border); background-color: var(--color-bg-surface); }
+    50% { box-shadow: 0 0 10px 2px var(--color-accent-muted); border-color: var(--color-accent); background-color: var(--color-bg-surface-active); }
+    100% { box-shadow: 0 0 0 0 var(--color-accent-subtle); border-color: var(--color-border); background-color: var(--color-bg-surface); }
   }
 
   @keyframes dot-blink {
@@ -118,7 +119,7 @@
     display: inline-block;
     width: 8px;
     height: 8px;
-    background-color: #2ecc71;
+    background-color: var(--color-accent);
     border-radius: 50%;
     margin-right: 6px;
     animation: dot-blink 1.5s infinite ease-in-out;

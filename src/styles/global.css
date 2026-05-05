@@ -1,0 +1,23 @@
+/* src/styles/global.css */
+@import './themes/default.css';
+@import './themes/brutalist.css';
+@import './themes/utilitarian.css';
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-base);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* Base element resets that might be needed */
+* {
+  box-sizing: border-box;
+}
+
+textarea, input, button {
+  font-family: inherit;
+}

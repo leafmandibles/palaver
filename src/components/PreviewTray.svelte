@@ -40,7 +40,7 @@
     max-height: 500px;
     object-fit: contain;
     border-radius: 4px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px 0 var(--shadow-md);
   }
 
   .clickable-image {
@@ -53,7 +53,7 @@
   }
 
   .file-placeholder {
-    color: #6b7280;
+    color: var(--color-text-subtle);
     font-style: italic;
     cursor: pointer;
   }

@@ -1,0 +1,46 @@
+/* src/styles/themes/brutalist.css */
+:root[data-theme="brutalist"] {
+  /* Colors - Backgrounds */
+  --color-bg-base: #ffffff;
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-hover: #f0f0f0;
+  --color-bg-surface-active: #ffff00;
+  --color-bg-error: #000000;
+  --color-bg-muted: #e0e0e0;
+  
+  /* Colors - Text */
+  --color-text-base: #000000;
+  --color-text-muted: #444444;
+  --color-text-subtle: #666666;
+  --color-text-error: #ff3333;
+  --color-text-button: #000000;
+  --color-text-button-hover: #ffffff;
+  
+  /* Colors - Accents & Borders */
+  --color-border: #000000;
+  --color-border-subtle: #000000;
+  --color-border-error: #ff0000;
+  --color-accent: #ff00ff; /* Bold, jarring accent */
+  --color-accent-muted: #ff00ff;
+  --color-accent-subtle: rgba(255, 0, 255, 0.2);
+  --color-link: #0000ff;
+  --color-link-hover: #ff0000;
+  --color-danger: #ff0000;
+  --color-danger-hover: #cc0000;
+  
+  /* Typography */
+  --font-body: 'Courier New', Courier, monospace;
+  --font-mono: 'Courier New', Courier, monospace;
+  
+  /* Geometry & Depth - Harsh edges, no soft shadows */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-full: 0px; /* Brutalist buttons are squares! */
+  --shadow-sm: 4px 4px 0px #000000;
+  --shadow-md: 8px 8px 0px #000000;
+  --shadow-btn: 2px 2px 0px #000000;
+  
+  /* Animation Details */
+  --transition-speed: 0s; /* Instant, no smooth fading */
+}

@@ -54,11 +54,11 @@
   .reasoning-content {
     font-family: inherit;
     font-size: 0.9em;
-    color: #495057;
+    color: var(--color-text-muted);
     line-height: 1.5;
   }
   .reasoning-content.preview {
-    color: #6c757d;
+    color: var(--color-text-muted);
   }
   .reasoning-content p {
     margin: 0 0 0.5rem 0;
@@ -70,7 +70,7 @@
   .more-btn {
     background: none;
     border: none;
-    color: #0066cc;
+    color: var(--color-link);
     padding: 0;
     font-size: inherit;
     cursor: pointer;
@@ -79,6 +79,6 @@
     margin-top: 0.25rem;
   }
   .more-btn:hover {
-    color: #004499;
+    color: var(--color-link-hover);
   }
 </style>

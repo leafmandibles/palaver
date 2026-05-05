@@ -395,13 +395,13 @@
   .header {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border);
   }
   .back-link {
     display: inline-block;
     margin-bottom: 1rem;
     text-decoration: none;
-    color: #4a6749;
+    color: var(--color-accent);
     font-weight: 500;
   }
   .back-link:hover {
@@ -420,11 +420,11 @@
     flex: 1;
   }
   .session-worktree {
-    background-color: #f3f4f6;
-    border: 1px solid #e5e7eb;
+    background-color: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 0.15rem 0.6rem;
-    color: #4b5563;
+    color: var(--color-text-muted);
     white-space: nowrap;
   }
   .title-row h1, .title-input {
@@ -438,14 +438,14 @@
     transition: background-color 0.2s;
   }
   .clickable-title:hover {
-    background-color: #f0f0f0;
-    border-color: #ddd;
+    background-color: var(--color-bg-muted);
+    border-color: var(--color-border);
   }
   .title-input {
     font-size: 2em;
     font-weight: bold;
     font-family: inherit;
-    border: 1px solid #729672;
+    border: 1px solid var(--color-accent-muted);
     border-radius: 4px;
     padding: 2px 4px;
     outline: none;
@@ -458,16 +458,16 @@
   }
   .collapse-btn {
     padding: 0.25rem 0.75rem;
-    background: #f5f5f4;
-    border: 1px solid #e7e5e4;
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.85rem;
-    color: #44403c;
+    color: var(--color-text-muted);
     transition: all 0.2s;
   }
   .collapse-btn:hover {
-    background: #e7e5e4;
+    background: var(--color-border-subtle);
   }
   .error {
     color: red;
@@ -483,7 +483,7 @@
     bottom: 0;
     padding: 1rem 0;
     /* Add a subtle gradient or solid color to mask messages scrolling behind it */
-    background: linear-gradient(to bottom, rgba(250,250,250,0) 0%, rgba(250,250,250,0.9) 20%, #fafafa 100%);
+    background: linear-gradient(to bottom, rgba(250,250,250,0) 0%, rgba(250,250,250,0.9) 20%, var(--color-bg-base) 100%);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -494,8 +494,8 @@
     align-items: center;
     margin: 1.5rem 0 0.5rem 0;
     padding: 0.25rem 0.5rem;
-    background-color: #729672;
-    border-bottom: 1px solid #5a7b5a;
+    background-color: var(--color-accent-muted);
+    border-bottom: 1px solid var(--color-accent);
     border-radius: 4px;
   }
   .agent-divider .agent-name {
@@ -503,7 +503,7 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #ffffff;
+    color: var(--color-bg-surface);
   }
   .tool-summary {
     display: flex;
@@ -518,10 +518,10 @@
     align-items: center;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--color-text-subtle);
   }
   .tool-badge {
-    border: 1px solid #9ca3af;
+    border: 1px solid var(--color-text-subtle);
     border-radius: 4px;
     padding: 0.1rem 0.3rem;
     margin-right: 0.25rem;
@@ -533,9 +533,9 @@
     transition: background-color 0.2s;
   }
   .tool-badge:hover {
-    background-color: #f3f4f6;
+    background-color: var(--color-bg-muted);
   }
   .tool-file {
-    color: #4b5563;
+    color: var(--color-text-muted);
   }
 </style>

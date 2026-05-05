@@ -43,11 +43,11 @@
 <style>
   .image-thumbnail {
     display: inline-block;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     overflow: hidden;
     max-width: 250px;
-    background: #f9fafb;
+    background: var(--color-bg-muted);
     margin-top: 0.5rem;
   }
   .image-thumbnail img {
@@ -71,20 +71,20 @@
     color: white;
     font-size: 0.75rem;
   }
-  .badge.image { background-color: #3b82f6; }
-  .badge.video { background-color: #ef4444; }
-  .badge.audio { background-color: #10b981; }
-  .badge.pdf { background-color: #f59e0b; }
-  .badge.text { background-color: #6b7280; }
-  .badge.unknown { background-color: #9ca3af; }
+  .badge.image { background-color: var(--color-link); }
+  .badge.video { background-color: var(--color-danger); }
+  .badge.audio { background-color: var(--color-accent); }
+  .badge.pdf { background-color: var(--color-accent-muted); }
+  .badge.text { background-color: var(--color-text-subtle); }
+  .badge.unknown { background-color: var(--color-text-subtle); }
   
   .filename {
     font-family: monospace;
-    color: #4b5563;
+    color: var(--color-text-muted);
   }
   
   .fallback {
-    background: #f1f3f5;
+    background: var(--color-bg-muted);
     padding: 0.5rem;
     border-radius: 4px;
     font-size: 0.85rem;

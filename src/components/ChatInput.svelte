@@ -148,22 +148,22 @@
   }
 
   .error-message {
-    color: #ef4444;
+    color: var(--color-text-error);
     font-size: 0.875rem;
     padding: 0.5rem 1rem;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 0.5rem;
+    background: var(--color-bg-error);
+    border: 1px solid var(--color-border-error);
+    border-radius: var(--radius-md);
     align-self: center;
     max-width: 100%;
     word-break: break-word;
   }
 
   .chat-input-container {
-    border: 1px solid #e7e5e4;
-    border-radius: 12px;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
     padding: 0.75rem 1rem;
-    background: #ffffff;
+    background: var(--color-bg-surface);
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -174,16 +174,16 @@
     border: none;
     outline: none;
     resize: none;
-    font-family: inherit;
+    font-family: var(--font-body);
     font-size: 1rem;
     padding: 0.25rem 0;
-    color: #374151;
+    color: var(--color-text-base);
     background: transparent;
     line-height: 1.5;
   }
 
   textarea::placeholder {
-    color: #9ca3af;
+    color: var(--color-text-subtle);
   }
 
   .attachments-preview {
@@ -191,16 +191,16 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--color-border-subtle);
   }
 
   .attachment-thumbnail {
     position: relative;
     width: 60px;
     height: 60px;
-    border-radius: 0.375rem;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-base);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -217,10 +217,10 @@
     position: absolute;
     top: -4px;
     right: -4px;
-    background: #ef4444;
-    color: white;
+    background: var(--color-danger);
+    color: var(--color-bg-surface);
     border: none;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     width: 16px;
     height: 16px;
     display: flex;
@@ -228,11 +228,11 @@
     justify-content: center;
     cursor: pointer;
     padding: 0;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: var(--shadow-btn);
   }
 
   .remove-attachment-btn:hover {
-    background: #dc2626;
+    background: var(--color-danger-hover);
   }
 
   .bottom-bar {
@@ -245,18 +245,18 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #78716c;
+    color: var(--color-text-button);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0.25rem;
-    border-radius: 0.375rem;
-    transition: background-color 0.2s, color 0.2s;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
   }
   
   .icon-btn:hover {
-    background: #f3f4f6;
-    color: #111827;
+    background: var(--color-bg-muted);
+    color: var(--color-text-button-hover);
   }
 
   .right-actions {
@@ -270,15 +270,15 @@
     display: flex;
     align-items: center;
     gap: 0.1rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: var(--font-mono);
     font-size: 0.85rem;
     padding: 0.2rem;
-    border-radius: 0.375rem;
-    transition: background-color 0.2s;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-speed);
   }
 
   .model-selector-group:hover {
-    background: #f3f4f6;
+    background: var(--color-bg-muted);
   }
 
   .selector-part {
@@ -286,35 +286,36 @@
     border: none;
     cursor: pointer;
     padding: 0.175rem 0.3rem;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
+    font-family: inherit;
   }
 
   .selector-part:hover {
-    background: #e5e7eb;
+    background: var(--color-border);
   }
 
   .mode {
-    color: #4a6749; /* Sage green for the mode */
+    color: var(--color-accent);
     font-weight: 600;
   }
 
   .separator {
-    color: #9ca3af;
+    color: var(--color-text-subtle);
     padding: 0 0.1rem;
   }
 
   .model-name {
-    color: #374151; /* Dark gray for model name */
+    color: var(--color-text-base);
   }
 
   .provider {
-    color: #9ca3af; /* Light gray for provider */
+    color: var(--color-text-subtle);
   }
 
   .chevron {
-    color: #9ca3af;
+    color: var(--color-text-subtle);
     margin-left: 0.1rem;
     margin-top: 0.1rem;
   }
@@ -324,15 +325,15 @@
     justify-content: flex-end;
     align-items: center;
     gap: 0.35rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: var(--font-mono);
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: var(--color-text-subtle);
     padding: 0 0.5rem;
     margin-top: -0.25rem;
   }
 
   .cost-separator {
-    color: #d1d5db;
+    color: var(--color-border);
   }
 
   .cost-item {

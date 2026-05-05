@@ -92,7 +92,7 @@
     gap: 0.5rem;
   }
   .badge {
-    background-color: #6c757d;
+    background-color: var(--color-text-muted);
     color: white;
     padding: 0.15rem 0.4rem;
     border-radius: 4px;
@@ -103,15 +103,15 @@
   .tool-name {
     font-family: monospace;
     font-weight: bold;
-    color: #343a40;
+    color: var(--color-text-base);
   }
   .status {
     font-size: 0.75rem;
     padding: 0.1rem 0.3rem;
     border-radius: 3px;
   }
-  .status.success, .status.completed { background-color: #d4edda; color: #155724; }
-  .status.error, .status.failed { background-color: #f8d7da; color: #721c24; }
+  .status.success, .status.completed { background-color: var(--color-accent-subtle); color: var(--color-accent); }
+  .status.error, .status.failed { background-color: var(--color-bg-error); color: var(--color-text-error); }
   
   .section {
     margin-bottom: 1rem;
@@ -123,7 +123,7 @@
     margin-bottom: 0;
   }
   pre {
-    background: #f1f3f5;
+    background: var(--color-bg-muted);
     padding: 0.5rem;
     border-radius: 4px;
     overflow-x: auto;
@@ -134,7 +134,7 @@
   .more-btn {
     background: none;
     border: none;
-    color: #0066cc;
+    color: var(--color-link);
     padding: 0;
     font-size: 0.85rem;
     cursor: pointer;
@@ -143,6 +143,6 @@
     margin-top: 0.25rem;
   }
   .more-btn:hover {
-    color: #004499;
+    color: var(--color-link-hover);
   }
 </style>
