@@ -12,7 +12,7 @@
     if (highlighter) return highlighter;
     if (!initPromise) {
       initPromise = createHighlighter({
-        themes: ['github-dark'],
+        themes: ['catppuccin-mocha'],
         langs: ['javascript', 'typescript', 'html', 'css', 'python', 'bash', 'svelte', 'json', 'yaml', 'markdown']
       }).then(h => {
         highlighter = h;
@@ -22,7 +22,7 @@
               const lang = token.lang || 'text';
               let codeHtml;
               try {
-                codeHtml = highlighter.codeToHtml(token.text, { lang, theme: 'github-dark' });
+                codeHtml = highlighter.codeToHtml(token.text, { lang, theme: 'catppuccin-mocha' });
               } catch (e) {
                 codeHtml = `<pre><code>${token.text}</code></pre>`;
               }
@@ -222,8 +222,8 @@
   .prose :global(.code-block-wrapper) {
     margin: 1em 0;
     border-radius: 8px;
-    background: #0d1117;
-    border: 1px solid rgba(0,0,0,0.06);
+    background: #1f2937;
+    border: 1px solid #3b4556;
     overflow: hidden;
   }
 
@@ -232,12 +232,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.4rem 1rem;
-    background: #161b22;
-    border-bottom: 1px solid #30363d;
+    background: #273244;
+    border-bottom: 1px solid #3b4556;
   }
 
   .prose :global(.code-block-lang) {
-    color: #8b949e;
+    color: #cbd5e1;
     font-size: 0.75rem;
     font-family: 'Inter', -apple-system, sans-serif;
   }
@@ -245,7 +245,7 @@
   .prose :global(.copy-code-btn) {
     background: none;
     border: none;
-    color: #8b949e;
+    color: #cbd5e1;
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
@@ -256,7 +256,7 @@
   }
 
   .prose :global(.copy-code-btn:hover) {
-    color: #c9d1d9;
+    color: #f8fafc;
   }
 
   .prose :global(pre) {
@@ -272,6 +272,7 @@
     font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
     font-size: 0.875em;
     line-height: 1.65;
+    color: #e5e7eb;
     background: none;
     border: none;
     padding: 0;
