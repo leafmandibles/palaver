@@ -215,6 +215,14 @@
     flex-wrap: wrap;
     gap: 1rem;
   }
+  a {
+    text-decoration: none;
+    color: var(--color-link);
+  }
+  a:hover {
+    text-decoration: underline;
+    color: var(--color-link-hover);
+  }
   li {
     padding: 1rem;
     border: 1px solid var(--color-border);

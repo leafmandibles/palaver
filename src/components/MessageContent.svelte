@@ -194,23 +194,24 @@
     margin: 0.6em 0;
   }
 
-  /* Links — no blue */
+  /* Links */
   .prose :global(a) {
-    color: var(--text-primary, var(--color-text-base));
+    color: var(--color-link);
     text-decoration: underline;
-    text-decoration-color: rgba(0,0,0,0.25);
+    text-decoration-color: var(--color-link);
     text-underline-offset: 3px;
-    transition: text-decoration-color 0.15s;
+    transition: color 0.15s, text-decoration-color 0.15s;
   }
   .prose :global(a:hover) {
-    text-decoration-color: rgba(0,0,0,0.7);
+    color: var(--color-link-hover);
+    text-decoration-color: var(--color-link-hover);
   }
 
   /* Inline code — neutral, not blue */
   .prose :global(:not(pre) > code) {
     font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
-    background: var(--color-bg-muted);
-    color: var(--text-code, var(--color-text-base));
+    background: #1e1e1e;
+    color: #d4d4d4;
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.875em;
@@ -221,7 +222,7 @@
   .prose :global(.code-block-wrapper) {
     margin: 1em 0;
     border-radius: 8px;
-    background: var(--color-bg-surface);
+    background: #0d1117;
     border: 1px solid rgba(0,0,0,0.06);
     overflow: hidden;
   }
@@ -231,12 +232,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.4rem 1rem;
-    background: var(--color-bg-surface);
-    border-bottom: 1px solid var(--color-border);
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
   }
 
   .prose :global(.code-block-lang) {
-    color: var(--color-text-subtle);
+    color: #8b949e;
     font-size: 0.75rem;
     font-family: 'Inter', -apple-system, sans-serif;
   }
@@ -244,7 +245,7 @@
   .prose :global(.copy-code-btn) {
     background: none;
     border: none;
-    color: var(--color-text-subtle);
+    color: #8b949e;
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
@@ -255,7 +256,7 @@
   }
 
   .prose :global(.copy-code-btn:hover) {
-    color: var(--color-bg-surface);
+    color: #c9d1d9;
   }
 
   .prose :global(pre) {
