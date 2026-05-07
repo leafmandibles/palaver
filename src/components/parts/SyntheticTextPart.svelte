@@ -1,3 +1,43 @@
+<script module>
+  import { createHighlighter } from 'shiki';
+  import DOMPurify from 'dompurify';
+
+  let highlighter = null;
+  let initPromise = null;
+
+  async function ensureHighlighter() {
+    if (highlighter) return highlighter;
+    if (!initPromise) {
+      initPromise = createHighlighter({
+        themes: ['vitesse-light'],
+        langs: ['javascript', 'typescript', 'html', 'css', 'python', 'bash', 'svelte', 'json', 'yaml', 'markdown']
+      }).then(h => {
+        highlighter = h;
+        return h;
+      });
+    }
+    return initPromise;
+  }
+
+  function getLanguage(filename) {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const languages = {
+      bash: 'bash',
+      css: 'css',
+      html: 'html',
+      js: 'javascript',
+      json: 'json',
+      md: 'markdown',
+      py: 'python',
+      svelte: 'svelte',
+      ts: 'typescript',
+      yaml: 'yaml',
+      yml: 'yaml'
+    };
+    return languages[ext] || 'text';
+  }
+</script>
+
 <script>
   let { part } = $props();
 
@@ -10,7 +50,36 @@
   const visibleLines = $derived(
     expanded ? fileContent?.lines || [] : fileContent?.lines.slice(0, previewLineCount) || []
   );
+  const visibleContent = $derived(visibleLines.join('\n'));
   const hasMore = $derived((fileContent?.lines.length || 0) > previewLineCount);
+  let highlightedHtml = $state('');
+
+  $effect(() => {
+    let active = true;
+    const filename = fileContent?.filename;
+    const content = visibleContent;
+
+    if (!filename || !content) {
+      highlightedHtml = '';
+      return;
+    }
+
+    ensureHighlighter().then(h => {
+      if (!active) return;
+      try {
+        highlightedHtml = DOMPurify.sanitize(h.codeToHtml(content, {
+          lang: getLanguage(filename),
+          theme: 'vitesse-light'
+        }));
+      } catch (e) {
+        highlightedHtml = '';
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  });
 
   function parseReadToolContent(value) {
     const contentMatch = value.match(/<content>\n([\s\S]*?)\n<\/content>/);
@@ -37,7 +106,11 @@
   <div class="synthetic-block file-output">
     <div class="synthetic-label">Read tool output</div>
     <div class="file-path" title={fileContent.path}>{fileContent.filename}</div>
-    <pre class="file-content">{visibleLines.join('\n')}</pre>
+    {#if highlightedHtml}
+      <div class="file-content highlighted">{@html highlightedHtml}</div>
+    {:else}
+      <pre class="file-content">{visibleContent}</pre>
+    {/if}
     {#if hasMore}
       <button class="more-button" type="button" onclick={() => expanded = !expanded}>
         {expanded ? 'less' : 'more'}
@@ -93,6 +166,18 @@
     line-height: 1.55;
     overflow-x: auto;
     tab-size: 2;
+  }
+
+  .highlighted :global(pre) {
+    background: transparent !important;
+    margin: 0 !important;
+    overflow-x: auto;
+    padding: 0 !important;
+    white-space: pre-wrap;
+  }
+
+  .highlighted :global(code) {
+    font-family: inherit;
   }
 
   .more-button {
