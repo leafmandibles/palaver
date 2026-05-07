@@ -2,6 +2,13 @@
     let { children } = $props();
 </script>
 
-<div>
+<div class="panel">
     {@render children()}
 </div>
+
+<style>
+    .panel {
+        width: 100%;
+        max-width: 600px;
+    }
+</style>

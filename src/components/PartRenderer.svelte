@@ -1,6 +1,7 @@
 <script>
   import { getContext } from 'svelte';
   import TextPart from './parts/TextPart.svelte';
+  import SyntheticTextPart from './parts/SyntheticTextPart.svelte';
   import ToolPart from './parts/ToolPart.svelte';
   import FilePart from './parts/FilePart.svelte';
   import ReasoningPart from './parts/ReasoningPart.svelte';
@@ -14,7 +15,9 @@
 
 {#if part.type === 'text' || part.type === 'file' || showDetails?.active !== false}
   <div class="part-container">
-    {#if part.type === 'text'}
+    {#if part.type === 'text' && part.synthetic}
+      <SyntheticTextPart {part} />
+    {:else if part.type === 'text'}
       <TextPart {part} {onFork} />
     {:else if part.type === 'tool'}
       <ToolPart {part} />

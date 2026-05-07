@@ -1,5 +1,10 @@
+import { createOpencodeClient } from '@opencode-ai/sdk/client';
+
 export class SessionEventController {
+  client = createOpencodeClient({ baseUrl: '/opencode' });
+
   sessionId = $state(null);
+  directory = $state(null);
   events = $state([]);
   error = $state(null);
   connected = $state(false);
@@ -7,76 +12,53 @@ export class SessionEventController {
   #eventAbortController = null;
   #reconnectTimer = null;
 
-  constructor(sessionId = null) {
-    if (sessionId) this.start(sessionId);
+  constructor(sessionId = null, directory = null) {
+    if (sessionId && directory) this.start(sessionId, directory);
   }
 
-  start(sessionId) {
-    if (!sessionId) return;
-    if (this.sessionId === sessionId && this.#eventAbortController) return;
+  start(sessionId, directory) {
+    if (!sessionId || !directory) return;
+    if (this.sessionId === sessionId && this.directory === directory && this.#eventAbortController) return;
 
     this.destroy();
     this.sessionId = sessionId;
+    this.directory = directory;
     this.error = null;
-    this.#startEventLoop(sessionId);
+    this.#startEventLoop(sessionId, directory);
   }
 
-  async #startEventLoop(sessionId) {
+  async #startEventLoop(sessionId, directory) {
     console.log(`[SessionEventController] Event loop initiated for session ${sessionId}`);
     this.#eventAbortController = new AbortController();
     const signal = this.#eventAbortController.signal;
 
     try {
-      const response = await fetch(`/opencode/session/${encodeURIComponent(sessionId)}/event`, {
-        headers: { Accept: 'text/event-stream' },
+      const eventStream = await this.client.event.subscribe({
+        query: { directory },
         signal
       });
-
-      if (!response.ok) {
-        throw new Error(`Session event stream failed: ${response.status} ${response.statusText}`);
-      }
-
-      if (!response.body) {
-        throw new Error('Session event stream response had no body');
-      }
 
       this.connected = true;
       this.error = null;
       console.log(`[SessionEventController] Connected to session event stream for ${sessionId}`);
 
-      const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
-      let buffer = '';
+      for await (const event of eventStream.stream) {
+        if (signal.aborted) break;
 
-      try {
-        while (!signal.aborted) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        const actualPayload = event?.type === 'sync' ? event.syncEvent : event;
+        if (!actualPayload) continue;
+        if (actualPayload.properties?.sessionID !== sessionId) continue;
 
-          buffer += value;
-          const chunks = buffer.split('\n\n');
-          buffer = chunks.pop() ?? '';
-
-          for (const chunk of chunks) {
-            const event = this.#parseSseChunk(chunk);
-            if (!event) continue;
-
-            const actualPayload = event.type === 'sync' ? event.syncEvent : event;
-            if (!actualPayload) continue;
-
-            this.events = [
-              ...this.events,
-              {
-                id: crypto.randomUUID(),
-                sessionId,
-                type: actualPayload.type || 'unknown',
-                timestamp: Date.now(),
-                payload: actualPayload
-              }
-            ];
+        this.events = [
+          ...this.events,
+          {
+            id: crypto.randomUUID(),
+            sessionId,
+            type: actualPayload.type || 'unknown',
+            timestamp: Date.now(),
+            payload: actualPayload
           }
-        }
-      } finally {
-        reader.releaseLock();
+        ];
       }
 
       console.log(`[SessionEventController] Session event stream ended for ${sessionId}`);
@@ -94,32 +76,15 @@ export class SessionEventController {
       }
 
       if (!signal.aborted) {
-        this.#scheduleReconnect(sessionId);
+        this.#scheduleReconnect(sessionId, directory);
       }
     }
   }
 
-  #parseSseChunk(chunk) {
-    const data = chunk
-      .split('\n')
-      .filter((line) => line.startsWith('data:'))
-      .map((line) => line.replace(/^data:\s*/, ''))
-      .join('\n');
-
-    if (!data) return null;
-
-    try {
-      return JSON.parse(data);
-    } catch (e) {
-      console.warn('[SessionEventController] Ignoring non-JSON session event:', data);
-      return null;
-    }
-  }
-
-  #scheduleReconnect(sessionId) {
+  #scheduleReconnect(sessionId, directory) {
     this.#reconnectTimer = setTimeout(() => {
       this.#reconnectTimer = null;
-      if (!this.#eventAbortController) this.#startEventLoop(sessionId);
+      if (!this.#eventAbortController) this.#startEventLoop(sessionId, directory);
     }, 3000);
   }
 
@@ -135,6 +100,7 @@ export class SessionEventController {
     }
 
     this.connected = false;
+    this.directory = null;
     this.events = [];
   }
 }

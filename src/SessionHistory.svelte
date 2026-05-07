@@ -1,17 +1,21 @@
 <script>
+  import { onDestroy } from 'svelte';
   import { SessionListController } from './controllers/SessionListController.svelte.js';
+  import { ProjectEventsController } from './controllers/ProjectEventsController.svelte.js';
   import { groupItemsByDate } from './utils/date.js';
   import { summarizePath, getPathInfo } from './utils/path.js';
    
   let { params } = $props();
-    
+     
   const sessionListCtrl = new SessionListController();
-  const activeSessionIds = $derived(new Set());
+  const projectEventsCtrl = new ProjectEventsController();
+  const activeSessionIds = $derived(projectEventsCtrl.activeSessionIds);
   let selectedWorktrees = $state(new Set());
 
   async function refreshSessions(projectId) {
     await Promise.resolve();
     await sessionListCtrl.refresh(projectId);
+    projectEventsCtrl.start(sessionListCtrl.project?.worktree);
   }
 
   const refreshPromise = $derived(refreshSessions(params.project_id));
@@ -61,6 +65,10 @@
       if (b === 'root') return 1;
       return a.localeCompare(b);
     });
+  });
+
+  onDestroy(() => {
+    projectEventsCtrl.destroy();
   });
 </script>
 

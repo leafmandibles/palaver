@@ -1,9 +1,18 @@
 <script>
+  import { getContext } from 'svelte';
   import { ProjectListController } from './controllers/ProjectListController.svelte.js';
   import { summarizePath } from './utils/path.js';
 
   const ctrl = new ProjectListController();
-  const activeProjectIds = $derived(new Set());
+  const globalEvents = getContext('global.events');
+  const activeProjectIds = $derived.by(() => {
+    const knownProjectIds = new Set(ctrl.projects.map(project => project.id));
+    return new Set(
+      (globalEvents?.events ?? [])
+        .map(event => event.project)
+        .filter(projectId => knownProjectIds.has(projectId))
+    );
+  });
 
   // Run once on initialization (no reactive dependencies needed here)
   let initializationPromise = ctrl.load();

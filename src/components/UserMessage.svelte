@@ -7,7 +7,9 @@
 
   // Separate file parts from other parts
   let fileParts = $derived(parts.filter(p => p.type === 'file'));
-  let mainParts = $derived(parts.filter(p => p.type !== 'file'));
+  let syntheticParts = $derived(parts.filter(p => p.synthetic));
+  let syntheticReadParts = $derived(syntheticParts.filter(p => getSyntheticPath(p)));
+  let mainParts = $derived(parts.filter(p => p.type !== 'file' && !p.synthetic));
 
   let hasVisibleParts = $derived(() => {
     if (showDetails?.active !== false) return true;
@@ -15,6 +17,32 @@
   });
 
   let selectedPreview = $state(null);
+  let selectedSyntheticPath = $state(null);
+  let visibleSyntheticParts = $derived(
+    selectedSyntheticPath
+      ? syntheticReadParts.filter(part => syntheticMatchesPath(part, selectedSyntheticPath))
+      : []
+  );
+
+  function getFilePath(part) {
+    if (part.url?.startsWith('file://')) return decodeURIComponent(part.url.replace('file://', ''));
+    return part.source?.path || part.filename || '';
+  }
+
+  function getSyntheticPath(part) {
+    const text = part.text || part.content || '';
+    return text.match(/<path>([\s\S]*?)<\/path>/)?.[1] || '';
+  }
+
+  function syntheticMatchesPath(part, filePath) {
+    const syntheticPath = getSyntheticPath(part);
+    return syntheticPath === filePath || syntheticPath.endsWith(filePath) || filePath.endsWith(syntheticPath);
+  }
+
+  function toggleSyntheticOutput(part) {
+    const filePath = getFilePath(part);
+    selectedSyntheticPath = selectedSyntheticPath === filePath ? null : filePath;
+  }
   
   import PreviewTray from './PreviewTray.svelte';
 </script>
@@ -42,11 +70,19 @@
               <img src={part.url} alt={part.filename || 'Image attachment'} />
             </div>
           {:else}
-            <div class="file-thumbnail">
+            <button class="file-thumbnail" type="button" onclick={() => toggleSyntheticOutput(part)}>
               <span class="file-icon">📄</span>
               <span class="file-name">{part.filename || 'Attachment'}</span>
-            </div>
+            </button>
           {/if}
+        {/each}
+      </div>
+    {/if}
+
+    {#if visibleSyntheticParts.length > 0}
+      <div class="synthetic-container">
+        {#each visibleSyntheticParts as part}
+          <PartRenderer {part} />
         {/each}
       </div>
     {/if}
@@ -89,6 +125,11 @@
     max-width: 80%;
   }
 
+  .synthetic-container {
+    max-width: 100%;
+    width: 100%;
+  }
+
   .image-thumbnail {
     border: 1px solid var(--color-border-subtle);
     border-radius: 12px;
@@ -123,6 +164,13 @@
     border-radius: 12px;
     background: var(--color-bg-surface);
     font-size: 0.85rem;
+    color: inherit;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .file-thumbnail:hover {
+    background: var(--color-bg-muted);
   }
 
   .file-icon {

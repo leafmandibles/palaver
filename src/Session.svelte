@@ -72,8 +72,8 @@
 
   onMount(async () => {
     if (params.session_id) {
-      sessionEvents.start(params.session_id);
-      ctrl.load(params.session_id);
+      await ctrl.load(params.session_id);
+      sessionEvents.start(params.session_id, ctrl.session?.directory || ctrl.project?.worktree);
     }
 
     await ctrl.fetchOptions();
@@ -185,23 +185,23 @@
     }
   }
 
-  function formatNumber(num) {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
-    return String(num);
-  }
+  // function formatNumber(num) {
+  //   if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  //   if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
+  //   return String(num);
+  // }
 
-  let currentModelData = $derived(ctrl.models.find(m => m.id === currentModel));
-  let modelCost = $derived(() => {
-    if (!currentModelData) return null;
-    const cost = currentModelData.cost;
-    const limit = currentModelData.limit;
-    return {
-      context: limit?.context ? formatNumber(limit.context) : null,
-      input: cost?.input ?? null,
-      output: cost?.output ?? null
-    };
-  });
+  // let currentModelData = $derived(ctrl.models.find(m => m.id === currentModel));
+  // let modelCost = $derived(() => {
+  //   if (!currentModelData) return null;
+  //   const cost = currentModelData.cost;
+  //   const limit = currentModelData.limit;
+  //   return {
+  //     context: limit?.context ? formatNumber(limit.context) : null,
+  //     input: cost?.input ?? null,
+  //     output: cost?.output ?? null
+  //   };
+  // });
 
   function getMessageAgent(message) {
     if (message.id?.toString().startsWith('temp-')) return currentMode;
@@ -392,6 +392,7 @@
         onClose={() => showModelSelector = false}
       />
     {/if}
+    <!-- Token cost counter temporarily disabled. -->
     <ChatInput
       onsend={handleSendMessage}
       mode={currentMode}
@@ -400,7 +401,6 @@
       onSelectorClick={handleSelectorClick}
       onCycleMode={handleCycleMode}
       error={ctrl.sendError}
-      modelCost={modelCost()}
       isWorking={ctrl.isWorking}
       onAbort={() => ctrl.abortSession(params.session_id)}
     />
