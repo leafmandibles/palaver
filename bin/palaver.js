@@ -3,6 +3,7 @@
 import { spawn, spawnSync } from "child_process";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
+import fs from "fs";
 import { createOpencodeClient } from "@opencode-ai/sdk/client";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -10,6 +11,29 @@ const root = resolve(__dirname, "..");
 
 const args = process.argv.slice(2);
 const command = args[0] || "help";
+
+function getConfig() {
+  const defaultUrl = "http://127.0.0.1:5000";
+  const configPath = resolve(process.cwd(), "palaver.json");
+  let url = defaultUrl;
+  
+  if (fs.existsSync(configPath)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      if (config.opencodeUrl) {
+        url = config.opencodeUrl;
+      }
+    } catch (e) {
+      console.warn(`Warning: Could not parse ${configPath}. Using default url: ${defaultUrl}`);
+    }
+  }
+  
+  const parsedUrl = new URL(url);
+  return {
+    url,
+    port: parsedUrl.port || (parsedUrl.protocol === "https:" ? "443" : "80")
+  };
+}
 
 function printHelp() {
   console.log(`
@@ -28,10 +52,13 @@ Commands:
 }
 
 async function startCommand() {
-  console.log("Starting opencode serve and Palaver web UI...");
+  const config = getConfig();
+  console.log(`Starting opencode serve on port ${config.port} and Palaver web UI...`);
   
-  const backend = spawn("opencode", ["serve", "--port", "5000"], { stdio: "inherit" });
-  const frontend = spawn("npm", ["run", "preview", "--", "--open"], { cwd: root, stdio: "inherit" });
+  const backend = spawn("opencode", ["serve", "--port", config.port, "--hostname", "0.0.0.0"], { stdio: "inherit" });
+  
+  const env = { ...process.env, OPENCODE_URL: config.url };
+  const frontend = spawn("npm", ["run", "preview", "--", "--host", "0.0.0.0", "--open"], { cwd: root, stdio: "inherit", env });
 
   const cleanup = () => {
     backend.kill();
@@ -44,17 +71,21 @@ async function startCommand() {
 }
 
 function opencodeCommand() {
-  console.log("→ opencode attach 0.0.0.0:5000");
-  spawnSync("opencode", ["attach", "0.0.0.0:5000"], { stdio: "inherit" });
+  const config = getConfig();
+  const hostPort = config.url.replace(/^https?:\/\//, '');
+  console.log(`→ opencode attach ${hostPort}`);
+  spawnSync("opencode", ["attach", hostPort], { stdio: "inherit" });
 }
 
 function chatCommand() {
-  spawnSync("opencode", ["attach", "http://localhost:5000"], { stdio: "inherit" });
+  const config = getConfig();
+  spawnSync("opencode", ["attach", config.url], { stdio: "inherit" });
 }
 
 async function statusCommand() {
+  const config = getConfig();
   console.log("Listening for active conversations for 5 seconds...");
-  const client = createOpencodeClient({ baseUrl: "http://localhost:5000" });
+  const client = createOpencodeClient({ baseUrl: config.url });
   
   const activeSessions = new Set();
   let streamResult;
@@ -62,7 +93,7 @@ async function statusCommand() {
   try {
     streamResult = await client.global.event();
   } catch (e) {
-    console.error("Failed to connect to opencode server. Is it running on port 5000?");
+    console.error(`Failed to connect to opencode server at ${config.url}`);
     process.exit(1);
   }
 
@@ -108,8 +139,9 @@ async function statusCommand() {
 }
 
 async function logCommand() {
+  const config = getConfig();
   console.log("Streaming logs from opencode server (Ctrl+C to exit)...");
-  const client = createOpencodeClient({ baseUrl: "http://localhost:5000" });
+  const client = createOpencodeClient({ baseUrl: config.url });
   
   let sessionCache = new Map();
   
@@ -133,7 +165,7 @@ async function logCommand() {
   try {
     streamResult = await client.global.event();
   } catch (e) {
-    console.error("Failed to connect to opencode server. Is it running on port 5000?");
+    console.error(`Failed to connect to opencode server at ${config.url}`);
     process.exit(1);
   }
 

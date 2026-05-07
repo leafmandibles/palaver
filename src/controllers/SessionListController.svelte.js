@@ -75,8 +75,8 @@ export class SessionListController {
         console.error(`[SessionListController::createSession] - error from client.session.create:`, res.error);
         this.error = JSON.stringify(res.error);
       } else if (res.data && res.data.id) {
-        console.log(`[SessionListController::createSession] - session created, redirecting to /session/${res.data.id}`);
-        push(`/session/${res.data.id}`);
+        console.log(`[SessionListController::createSession] - session created, redirecting to /session/${projectId}/${res.data.id}`);
+        push(`/session/${projectId}/${res.data.id}`);
       }
     } catch (err) {
       console.error(`[SessionListController::createSession] - caught exception:`, err);

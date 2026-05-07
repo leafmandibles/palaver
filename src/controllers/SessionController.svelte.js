@@ -378,8 +378,10 @@ export class SessionController {
         return;
       }
       if (res.data && res.data.id) {
+        console.log(`[SessionListController::createSession] - session created, redirecting to /session/${res.data.id}`);
+        const projectId = this.session?.projectID || 'unknown';
         console.log(`[SessionController::forkSession] - forked to new session ${res.data.id}`);
-        push(`/session/${res.data.id}`);
+        push(`/session/${projectId}/${res.data.id}`);
       }
     } catch (err) {
       console.error(`[SessionController::forkSession] - exception:`, err);

@@ -5,12 +5,13 @@
   import Session from './Session.svelte';
   import Events from './Events.svelte';
   import ThemeSwitcher from './components/ThemeSwitcher.svelte';
+  import Panel from './components/Panel.svelte';
 
   const routes = {
     '/': ProjectList,
     '/events': Events,
     '/project/:project_id/sessions': SessionHistory,
-    '/session/:session_id': Session,
+    '/session/:project_id/:session_id': Session,
   };
 </script>
 
@@ -19,7 +20,9 @@
     <div class="spacer"></div>
     <ThemeSwitcher />
   </header>
-  <Router {routes} />
+  <Panel>
+    <Router {routes} />
+  </Panel>
 </main>
 
 <style>

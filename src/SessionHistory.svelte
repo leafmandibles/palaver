@@ -104,7 +104,7 @@
             {#each group.items as session}
               <li class:active={activeSessionIds.has(session.id)}>
                 <div class="card-top">
-                  <a href="#/session/{session.id}">
+                  <a href="#/session/{params.project_id}/{session.id}">
                     <strong>
                       {#if activeSessionIds.has(session.id)}
                         <span class="pulse-dot"></span>

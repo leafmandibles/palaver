@@ -275,7 +275,7 @@
 
 <div class="session-container">
   <div class="header">
-    <a href="#/" class="back-link">&larr; Back to Sessions</a>
+    <a href={params.project_id ? `#/project/${params.project_id}/sessions` : '#/'} class="back-link">&larr; Back to Sessions</a>
     {#if ctrl.session}
       <div class="title-row">
         <div class="title-and-worktree">

@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/opencode': {
-        target: 'http://127.0.0.1:4096',
+        target: process.env.OPENCODE_URL || 'http://127.0.0.1:5000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/opencode/, '')
       }
