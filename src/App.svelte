@@ -1,4 +1,5 @@
 <script>
+  import { onDestroy, setContext } from 'svelte';
   import Router from 'svelte-spa-router';
   import ProjectList from './ProjectList.svelte';
   import SessionHistory from './SessionHistory.svelte';
@@ -6,6 +7,11 @@
   import Events from './Events.svelte';
   import ThemeSwitcher from './components/ThemeSwitcher.svelte';
   import Panel from './components/Panel.svelte';
+  import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
+
+  const globalEvents = new GlobalEvents();
+  setContext('global.events', globalEvents);
+  onDestroy(() => globalEvents.destroy());
 
   const routes = {
     '/': ProjectList,

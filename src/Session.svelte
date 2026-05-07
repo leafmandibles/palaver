@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy, setContext } from 'svelte';
   import { SessionController } from './controllers/SessionController.svelte.js';
+  import { SessionEventController } from './controllers/SessionEventController.svelte.js';
   import UserMessage from './components/UserMessage.svelte';
   import AssistantMessage from './components/AssistantMessage.svelte';
   import ChatInput from './components/ChatInput.svelte';
@@ -10,6 +11,9 @@
 
   let { params } = $props();
   const ctrl = new SessionController();
+  const sessionEvents = new SessionEventController();
+  let events = $derived(sessionEvents.events);
+  let processedEventCount = 0;
 
   let forceScroll = $state(false);
   let initialScrollDone = $state(false);
@@ -67,6 +71,11 @@
   }
 
   onMount(async () => {
+    if (params.session_id) {
+      sessionEvents.start(params.session_id);
+      ctrl.load(params.session_id);
+    }
+
     await ctrl.fetchOptions();
     if (ctrl.modes && ctrl.modes.length > 0) {
       if (!currentMode || !ctrl.modes.includes(currentMode)) {
@@ -75,13 +84,22 @@
     }
   });
 
-  // Initialize the session (runs once on mount / param change via svelte-spa-router)
-  if (params.session_id) {
-    ctrl.load(params.session_id);
-  }
-
   onDestroy(() => {
-    ctrl.unsubscribeFromEvents();
+    sessionEvents.destroy();
+  });
+
+  $effect(() => {
+    const records = events;
+
+    if (records.length < processedEventCount) {
+      processedEventCount = 0;
+    }
+
+    for (const event of records.slice(processedEventCount)) {
+      ctrl.processEvent(event.payload, params.session_id);
+    }
+
+    processedEventCount = records.length;
   });
 
   function isNearBottom() {

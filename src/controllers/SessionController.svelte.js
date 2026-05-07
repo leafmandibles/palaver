@@ -166,7 +166,23 @@ export class SessionController {
     } else if (eventType === 'message.part.updated') {
       const { part } = data.properties;
       this.streamingParts.set(part.id, part);
+    } else if (eventType === 'session.status') {
+      const status = data.properties?.status;
+      if (status?.type === 'busy') {
+        this.isWorking = true;
+        this.workingStatus = 'Working...';
+      } else if (status?.type === 'retry') {
+        this.isWorking = true;
+        this.workingStatus = `Retrying... (${status.attempt})`;
+      } else if (status?.type === 'idle') {
+        this.isWorking = false;
+        this.workingStatus = '';
+        this.streamingParts.clear();
+      }
     } else if (eventType === 'session.idle') {
+      this.isWorking = false;
+      this.workingStatus = '';
+      this.streamingParts.clear();
       return;
     }
 
@@ -261,8 +277,7 @@ export class SessionController {
       console.log(`[SessionController::load] - finished`);
     }
 
-    // Subscribe to events and check ongoing operations after loading
-    this.subscribeToSessionEvents(sessionId);
+    // Check ongoing operations after loading. Session events are owned by SessionEventController.
     this.checkSessionStatus(sessionId);
   }
 
@@ -272,9 +287,6 @@ export class SessionController {
     this.isWorking = true;
     this.workingStatus = "Thinking...";
     this.streamingParts.clear();
-
-    // Ensure we are subscribed to events for this session
-    this.subscribeToSessionEvents(sessionId);
 
     try {
       console.log(`[SessionController::sendMessage] - calling client.session.prompt`);

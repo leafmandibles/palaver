@@ -1,7 +1,8 @@
 <script>
   import { getContext } from 'svelte';
 
-  const globalEvent = getContext('global.events');
+  const globalEvents = getContext('global.events');
+  let events = $derived(globalEvents?.events ?? []);
 </script>
 
 <div class="events-container">
@@ -21,7 +22,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each [...(globalEvent?.events || [])].reverse() as event (event.id)}
+        {#each [...events].reverse() as event (event.id)}
           <tr>
             <td class="time">{new Date(event.timestamp).toLocaleTimeString()}</td>
             <td class="project">{event.project}</td>
@@ -31,7 +32,7 @@
             </td>
           </tr>
         {/each}
-        {#if !globalEvent?.events || globalEvent.events.length === 0}
+        {#if events.length === 0}
           <tr>
             <td colspan="4" class="empty">Waiting for events...</td>
           </tr>
