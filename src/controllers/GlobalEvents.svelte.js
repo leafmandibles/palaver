@@ -1,4 +1,5 @@
 import { createOpencodeClient } from '@opencode-ai/sdk/client';
+import { createId } from '../utils/id.js';
 
 export class GlobalEvents {
   client = createOpencodeClient({ baseUrl: '/opencode' });
@@ -40,7 +41,7 @@ export class GlobalEvents {
           ) {
             console.log(`[GlobalEvents] Detected active event for project ${project}:`, actualPayload.type);
             
-            const record = { id: crypto.randomUUID(), project, type: actualPayload.type, timestamp: Date.now(), payload: actualPayload };
+            const record = { id: createId(), project, type: actualPayload.type, timestamp: Date.now(), payload: actualPayload };
             
             // Append to array immutably to guarantee Svelte 5 reactivity
             this.events = [...this.events, record];

@@ -1,4 +1,5 @@
 import { createOpencodeClient } from '@opencode-ai/sdk/client';
+import { createId } from '../utils/id.js';
 
 export class SessionEventController {
   client = createOpencodeClient({ baseUrl: '/opencode' });
@@ -52,7 +53,7 @@ export class SessionEventController {
         this.events = [
           ...this.events,
           {
-            id: crypto.randomUUID(),
+            id: createId(),
             sessionId,
             type: actualPayload.type || 'unknown',
             timestamp: Date.now(),
