@@ -1,10 +1,17 @@
 <script>
-    let { children } = $props();
+    import { getContext, untrack } from 'svelte';
+
+    let { children, title, group = 'main' } = $props();
+
+    const panels = getContext(`panel.${untrack(() => group)}`);
+    const index = panels?.register({ title: untrack(() => title) });
 </script>
 
-<div class="panel">
-    {@render children()}
-</div>
+{#if !panels || panels.isActive(index)}
+    <div class="panel">
+        {@render children()}
+    </div>
+{/if}
 
 <style>
     .panel {

@@ -6,6 +6,7 @@
   import Session from './Session.svelte';
   import Events from './Events.svelte';
   import ThemeSwitcher from './components/ThemeSwitcher.svelte';
+  import Panels from './components/Panels.svelte';
   import Panel from './components/Panel.svelte';
   import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
 
@@ -26,9 +27,11 @@
     <div class="spacer"></div>
     <ThemeSwitcher />
   </header>
-  <Panel>
-    <Router {routes} />
-  </Panel>
+  <Panels>
+    <Panel title="Main">
+      <Router {routes} />
+    </Panel>
+  </Panels>
 </main>
 
 <style>
