@@ -7,6 +7,7 @@
   import ChatInput from './components/ChatInput.svelte';
   import ModelSelector from './components/ModelSelector.svelte';
   import ProgressIndicator from './components/ProgressIndicator.svelte';
+  import StreamPreview from './components/StreamPreview.svelte';
   import { getPathInfo } from './utils/path.js';
 
   let { params } = $props();
@@ -70,6 +71,94 @@
     node.select();
   }
 
+  function normalizeModelSelection(value) {
+    if (!value) return {};
+
+    if (typeof value === 'string') {
+      return { modelId: value };
+    }
+
+    return {
+      modelId: value.modelID || value.modelId || value.id,
+      providerId: value.providerID || value.providerId || value.provider
+    };
+  }
+
+  function getMessageModelSelection(message) {
+    const directSelection = normalizeModelSelection(message.info?.model || message.model);
+    const modelId = directSelection.modelId || message.info?.modelID || message.info?.modelId || message.modelID || message.modelId;
+    const providerId = directSelection.providerId || message.info?.providerID || message.info?.providerId || message.providerID || message.providerId;
+
+    return { modelId, providerId };
+  }
+
+  function getLastInvocationSelection(messages) {
+    const selection = { mode: null, modelId: null, providerId: null };
+
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+
+      if (!selection.mode) {
+        selection.mode = getMessageAgent(message);
+      }
+
+      if (!selection.modelId || !selection.providerId) {
+        const modelSelection = getMessageModelSelection(message);
+        selection.modelId = selection.modelId || modelSelection.modelId;
+        selection.providerId = selection.providerId || modelSelection.providerId;
+      }
+
+      if (selection.mode && selection.modelId && selection.providerId) {
+        break;
+      }
+    }
+
+    return selection;
+  }
+
+  function validateCurrentMode() {
+    if (ctrl.modes && ctrl.modes.length > 0 && !ctrl.modes.includes(currentMode)) {
+      currentMode = ctrl.modes.includes('plan') ? 'plan' : ctrl.modes[0];
+    }
+  }
+
+  function applyLastInvocationSelection() {
+    if (!ctrl.messages || ctrl.messages.length === 0) {
+      validateCurrentMode();
+      return;
+    }
+
+    const selection = getLastInvocationSelection(ctrl.messages);
+
+    if (selection.mode && ctrl.modes.includes(selection.mode)) {
+      currentMode = selection.mode;
+    } else {
+      validateCurrentMode();
+    }
+
+    const selectedModel = selection.modelId
+      ? ctrl.models.find(m => m.id === selection.modelId)
+      : null;
+    const selectedProvider = selection.providerId
+      ? ctrl.providers.find(p => p.id === selection.providerId)
+      : null;
+
+    if (selectedModel) {
+      currentModel = selectedModel.id;
+      currentProvider = selectedModel.providerId;
+      return;
+    }
+
+    if (selectedProvider) {
+      currentProvider = selectedProvider.id;
+      const currentModelForProvider = ctrl.models.find(m => m.id === currentModel && m.providerId === currentProvider);
+      if (!currentModelForProvider) {
+        const firstProviderModel = ctrl.models.find(m => m.providerId === currentProvider);
+        if (firstProviderModel) currentModel = firstProviderModel.id;
+      }
+    }
+  }
+
   onMount(async () => {
     if (params.session_id) {
       await ctrl.load(params.session_id);
@@ -77,11 +166,7 @@
     }
 
     await ctrl.fetchOptions();
-    if (ctrl.modes && ctrl.modes.length > 0) {
-      if (!currentMode || !ctrl.modes.includes(currentMode)) {
-        currentMode = ctrl.modes.includes('plan') ? 'plan' : ctrl.modes[0];
-      }
-    }
+    applyLastInvocationSelection();
   });
 
   onDestroy(() => {
@@ -371,7 +456,7 @@
         {#if ctrl.streamingParts && ctrl.streamingParts.size > 0}
           <AssistantMessage parts={Array.from(ctrl.streamingParts.values())} />
         {/if}
-        <ProgressIndicator status={ctrl.workingStatus} />
+        <StreamPreview status={ctrl.workingStatus} parts={Array.from(ctrl.streamingParts?.values() || [])} />
       {/if}
     </div>
   {/if}

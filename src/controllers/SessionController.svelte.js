@@ -150,19 +150,25 @@ export class SessionController {
       this.sendError = err.data?.message || err.message || JSON.stringify(err);
     } else if (eventType === 'message.part.delta') {
       const { partID, field, delta } = data.properties;
-      if (field === 'text') {
-        const existing = this.streamingParts.get(partID) || { type: 'text', text: '' };
-        existing.text = (existing.text || '') + delta;
+      const partType = data.properties.part?.type || 'text';
+      
+      const existing = this.streamingParts.get(partID) || { type: partType };
+      existing.type = partType;
+      
+      if (partType === 'tool') {
+        // Also capture tool name if available in the delta event
+        if (data.properties.part?.name) existing.name = data.properties.part.name;
+        if (data.properties.part?.tool) existing.toolName = data.properties.part.tool;
+        if (data.properties.part?.toolName) existing.toolName = data.properties.part.toolName;
         
-        // Track type from delta event if possible
-        if (data.properties.part?.type) {
-          existing.type = data.properties.part.type;
-        } else if (!existing.type) {
-          existing.type = 'text'; // Fallback
+        if (field === 'args' || field === 'input') {
+          existing.args = (existing.args || '') + delta;
         }
-        
-        this.streamingParts.set(partID, existing);
+      } else if (field === 'text') {
+        existing.text = (existing.text || '') + delta;
       }
+      
+      this.streamingParts.set(partID, existing);
     } else if (eventType === 'message.part.updated') {
       const { part } = data.properties;
       this.streamingParts.set(part.id, part);
