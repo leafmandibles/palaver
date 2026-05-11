@@ -29,10 +29,10 @@ export class PSessionListController extends SessionListController {
         body: JSON.stringify({ title: 'New Session' })
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
         console.error(`[PSessionListController::createSession] - error from /session/new:`, data);
-        this.error = JSON.stringify(data);
+        this.error = data ? JSON.stringify(data) : `Session creation failed with status ${response.status}`;
       } else if (data?.id) {
         console.log(`[PSessionListController::createSession] - session created, redirecting to /session/${projectId}/${data.id}`);
         await this.navigate(`/session/${projectId}/${data.id}`);
