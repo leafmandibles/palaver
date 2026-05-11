@@ -23,6 +23,7 @@ Palaver's local services use these defaults:
 | FastAPI backend | `http://127.0.0.1:8000` | Uvicorn's `--host` and `--port` options |
 | OpenCode upstream for FastAPI | `http://127.0.0.1:5000` | `OPENCODE_URL` |
 | Vite `/opencode` proxy target | `http://127.0.0.1:8000` | `PALAVER_BACKEND_URL` |
+| Local OpenCode server target for topology decisions | `http://127.0.0.1:5000` | `PALAVER_OPENCODE_SERVER_URL`, then `OPENCODE_URL` |
 | Browser Convex client target | `http://127.0.0.1:3210` | `VITE_CONVEX_URL` |
 | Vite `/convex` proxy target | `http://127.0.0.1:3210` | `PALAVER_CONVEX_BACKEND_URL` |
 | Self-hosted Convex backend | `http://127.0.0.1:3210` when started as shown below | `bin/run_convex.sh <instance_name> <secret> <backend_port> [data_folder]` |

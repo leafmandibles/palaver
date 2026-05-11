@@ -1,6 +1,19 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createDevProxy } from '../../vite.config.js';
+import { createDevProxy, createLocalServiceTargets } from '../../vite.config.js';
+
+/**
+ * Tests that local FastAPI and OpenCode service targets can be derived from environment values.
+ */
+function testConfiguredLocalServiceTargets() {
+  const targets = createLocalServiceTargets({
+    PALAVER_BACKEND_URL: 'http://127.0.0.1:15001',
+    PALAVER_OPENCODE_SERVER_URL: 'http://127.0.0.1:18001'
+  });
+
+  assert.equal(targets.fastApiUrl, 'http://127.0.0.1:15001');
+  assert.equal(targets.opencodeServerUrl, 'http://127.0.0.1:18001');
+}
 
 /**
  * Tests that Vite routes Convex HTTP and websocket traffic to the local self-hosted backend by default.
@@ -36,3 +49,4 @@ function testConvexProxyRewrite() {
 test('uses the default local Convex proxy target', testDefaultConvexProxyTarget);
 test('uses a configured Convex proxy target', testConfiguredConvexProxyTarget);
 test('rewrites the browser-facing Convex proxy prefix', testConvexProxyRewrite);
+test('derives local service targets from environment values', testConfiguredLocalServiceTargets);
