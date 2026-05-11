@@ -1,0 +1,7 @@
+{
+  "features": {
+    "palaver.control_plane": {
+      "defaultValue": false
+    }
+  }
+}
