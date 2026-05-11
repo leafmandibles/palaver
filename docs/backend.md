@@ -97,3 +97,13 @@ Validate the local Convex files with:
 ```bash
 npx convex codegen
 ```
+
+## Local Convex Launcher
+
+Start the self-hosted Convex backend with:
+
+```bash
+bin/run_convex.sh palaver password 3210
+```
+
+The optional fourth argument sets the data folder and defaults to `./data` when omitted. The launcher first uses `bin/convex-local-backend`, then falls back to `convex-local-backend` from `PATH` if the project-local binary is unavailable.
