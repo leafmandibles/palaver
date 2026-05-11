@@ -120,6 +120,20 @@ OPENCODE_URL=http://127.0.0.1:18000 uv run uvicorn palaver_backend.main:app --ho
 
 If `OPENCODE_URL` is not set, the backend defaults to `http://127.0.0.1:18000`.
 
+## Control-Plane Session Creation
+
+When `palaver.control_plane` is enabled, Palaver-owned commands stay outside the OpenCode passthrough route. `POST /session/new` creates an upstream OpenCode session by forwarding to `POST /session` on the configured `OPENCODE_URL`, preserving the JSON request body and query parameters such as `directory`.
+
+Example:
+
+```bash
+curl -X POST 'http://127.0.0.1:15000/session/new?directory=/path/to/project' \
+  -H 'content-type: application/json' \
+  --data '{"title":"New Session"}'
+```
+
+Successful responses and upstream OpenCode errors are returned with the upstream status code and response body so callers can handle session creation predictably.
+
 To manually verify incremental stream delivery, start the backend with `OPENCODE_URL` pointed at a streaming OpenCode-compatible upstream, then run:
 
 ```bash
