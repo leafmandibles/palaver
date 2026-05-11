@@ -1,5 +1,5 @@
 import { createOpencodeClient } from '@opencode-ai/sdk/client';
-import { push } from 'svelte-spa-router';
+import { navigate } from '../lib/navigation.js';
 
 export class SessionListController {
   client = createOpencodeClient({ baseUrl: '/opencode' });
@@ -76,7 +76,7 @@ export class SessionListController {
         this.error = JSON.stringify(res.error);
       } else if (res.data && res.data.id) {
         console.log(`[SessionListController::createSession] - session created, redirecting to /session/${projectId}/${res.data.id}`);
-        push(`/session/${projectId}/${res.data.id}`);
+        await navigate(`/session/${projectId}/${res.data.id}`);
       }
     } catch (err) {
       console.error(`[SessionListController::createSession] - caught exception:`, err);

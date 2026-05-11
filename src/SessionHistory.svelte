@@ -5,9 +5,7 @@
   import { groupItemsByDate } from './utils/date.js';
   import { summarizePath, getPathInfo } from './utils/path.js';
    
-  let { params } = $props();
-     
-  const sessionListCtrl = new SessionListController();
+  let { params, sessionListCtrl = new SessionListController() } = $props();
   const projectEventsCtrl = new ProjectEventsController();
   const activeSessionIds = $derived(projectEventsCtrl.activeSessionIds);
   let selectedWorktrees = $state(new Set());
