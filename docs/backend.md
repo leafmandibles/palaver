@@ -75,6 +75,23 @@ VITE_CONVEX_URL=http://127.0.0.1:3210 npm run dev
 
 The controller exposes a lightweight `verifyConnection()` path that calls the Convex health endpoint, so future UI or diagnostics can confirm the configured local Convex service is reachable without changing the existing `/opencode` frontend contract.
 
+## Vite Convex Proxy
+
+During local frontend development, Vite proxies browser requests from `/convex` to the self-hosted Convex backend at `http://127.0.0.1:3210` by default. The proxy strips the browser-facing `/convex` prefix before forwarding upstream and enables websocket upgrades so Convex sync traffic can use the same route.
+
+Configure the Convex backend proxy target with `PALAVER_CONVEX_BACKEND_URL`:
+
+```bash
+PALAVER_CONVEX_BACKEND_URL=http://127.0.0.1:3210 npm run dev
+```
+
+The default proxy target matches the local Convex launcher convention from `bin/run_convex.sh`: backend port `3210`, site proxy port `3211`. To verify the proxy manually, start Vite and the local Convex backend, configure the browser client for the Vite route, then check the health endpoint through Vite:
+
+```bash
+VITE_CONVEX_URL=http://127.0.0.1:5173/convex npm run dev
+curl http://127.0.0.1:5173/convex/api/health
+```
+
 Validate the local Convex files with:
 
 ```bash
