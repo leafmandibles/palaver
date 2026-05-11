@@ -133,10 +133,18 @@ npx convex codegen
 
 ## Local Convex Launcher
 
-Start the self-hosted Convex backend with:
+Start the self-hosted Convex backend through Palaver's launcher from the repository root:
 
 ```bash
 bin/run_convex.sh palaver password 3210
 ```
 
-The optional fourth argument sets the data folder and defaults to `./data` when omitted. The launcher first uses `bin/convex-local-backend`, then falls back to `convex-local-backend` from `PATH` if the project-local binary is unavailable.
+The arguments are `<instance_name> <secret> <backend_port> [data_folder]`. The optional `data_folder` defaults to `./data`; with the command above, Convex stores state under `./data/palaver`, listens on backend port `3210`, and exposes the Convex site proxy on `3211`.
+
+The launcher starts `bin/convex-local-backend` first and falls back to `convex-local-backend` from `PATH` if the project-local binary is unavailable. After the backend starts, it derives and exports `CONVEX_SELF_HOSTED_URL=http://127.0.0.1:3210` and `CONVEX_SELF_HOSTED_ADMIN_KEY`, then runs `npx convex deploy` so the local schema in `convex/` is deployed to the self-hosted instance.
+
+Keep the launcher process running while using the app. In another shell, start Vite with the browser client pointed at the Vite Convex proxy when you want frontend traffic to flow through `/convex`:
+
+```bash
+VITE_CONVEX_URL=http://127.0.0.1:5173/convex npm run dev
+```
