@@ -13,6 +13,18 @@ uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 8000 --reload
 
 The default local backend URL is `http://127.0.0.1:8000`.
 
+## Vite OpenCode Proxy
+
+During local frontend development, Vite proxies browser requests from `/opencode` to the FastAPI backend at `http://127.0.0.1:8000` by default. Vite keeps the `/opencode` prefix intact because FastAPI owns that parent route and strips it before forwarding to the real OpenCode upstream.
+
+Configure the backend proxy target with `PALAVER_BACKEND_URL`:
+
+```bash
+PALAVER_BACKEND_URL=http://127.0.0.1:8000 npm run dev
+```
+
+The Svelte controllers and direct browser fetches continue to call `/opencode`; only Vite's local development target changes.
+
 ## Health Check
 
 Verify the backend is running with:
