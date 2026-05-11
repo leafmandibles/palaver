@@ -13,6 +13,23 @@ uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 8000 --reload
 
 The default local backend URL is `http://127.0.0.1:8000`.
 
+## Default Ports And Environment Variables
+
+Palaver's local services use these defaults:
+
+| Service | Default | Config |
+| --- | --- | --- |
+| Vite dev server | `http://127.0.0.1:5173` | Vite's `--host` and `--port` options |
+| FastAPI backend | `http://127.0.0.1:8000` | Uvicorn's `--host` and `--port` options |
+| OpenCode upstream for FastAPI | `http://127.0.0.1:5000` | `OPENCODE_URL` |
+| Vite `/opencode` proxy target | `http://127.0.0.1:8000` | `PALAVER_BACKEND_URL` |
+| Browser Convex client target | `http://127.0.0.1:3210` | `VITE_CONVEX_URL` |
+| Vite `/convex` proxy target | `http://127.0.0.1:3210` | `PALAVER_CONVEX_BACKEND_URL` |
+| Self-hosted Convex backend | `http://127.0.0.1:3210` when started as shown below | `bin/run_convex.sh <instance_name> <secret> <backend_port> [data_folder]` |
+| Self-hosted Convex site proxy | backend port plus one, `http://127.0.0.1:3211` when the backend port is `3210` | Derived by `bin/run_convex.sh` |
+
+The Convex launcher also exports `CONVEX_SELF_HOSTED_URL` and `CONVEX_SELF_HOSTED_ADMIN_KEY` for the `npx convex deploy` process it starts. Contributors normally do not need to set those variables manually.
+
 Verify the FastAPI process is accepting requests by checking its health endpoint:
 
 ```bash
