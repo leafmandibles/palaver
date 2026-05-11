@@ -26,6 +26,55 @@ function testDefaultLocalServiceTargets() {
 }
 
 /**
+ * Tests that disabled control-plane mode routes browser OpenCode requests directly to the configured OpenCode server.
+ */
+function testThinClientOpencodeProxyTarget() {
+  const proxy = createDevProxy(
+    {
+      PALAVER_OPENCODE_SERVER_URL: 'http://127.0.0.1:18002'
+    },
+    {
+      isControlPlaneEnabled: () => false
+    }
+  );
+
+  assert.equal(proxy['/opencode'].target, 'http://127.0.0.1:18002');
+}
+
+/**
+ * Tests that disabled control-plane mode strips only the browser-facing OpenCode proxy prefix.
+ */
+function testThinClientOpencodeProxyRewrite() {
+  const proxy = createDevProxy(
+    {},
+    {
+      isControlPlaneEnabled: () => false
+    }
+  );
+
+  assert.equal(proxy['/opencode'].rewrite('/opencode/session'), '/session');
+  assert.equal(proxy['/opencode'].rewrite('/opencode/event'), '/event');
+  assert.equal(proxy['/opencode'].rewrite('/opencode/session/abc'), '/session/abc');
+}
+
+/**
+ * Tests that enabled control-plane mode preserves the FastAPI passthrough target and path contract.
+ */
+function testControlPlaneOpencodeProxyTarget() {
+  const proxy = createDevProxy(
+    {
+      PALAVER_BACKEND_URL: 'http://127.0.0.1:15002'
+    },
+    {
+      isControlPlaneEnabled: () => true
+    }
+  );
+
+  assert.equal(proxy['/opencode'].target, 'http://127.0.0.1:15002');
+  assert.equal(proxy['/opencode'].rewrite, undefined);
+}
+
+/**
  * Tests that Vite routes Convex HTTP and websocket traffic to the local self-hosted backend by default.
  */
 function testDefaultConvexProxyTarget() {
@@ -61,3 +110,6 @@ test('uses a configured Convex proxy target', testConfiguredConvexProxyTarget);
 test('rewrites the browser-facing Convex proxy prefix', testConvexProxyRewrite);
 test('derives local service targets from environment values', testConfiguredLocalServiceTargets);
 test('uses default local FastAPI and OpenCode service target ports', testDefaultLocalServiceTargets);
+test('routes thin-client OpenCode traffic to the configured OpenCode server', testThinClientOpencodeProxyTarget);
+test('rewrites thin-client OpenCode paths by stripping the parent prefix', testThinClientOpencodeProxyRewrite);
+test('routes control-plane OpenCode traffic to FastAPI without rewriting', testControlPlaneOpencodeProxyTarget);

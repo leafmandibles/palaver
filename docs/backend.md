@@ -70,19 +70,25 @@ opencode attach http://127.0.0.1:18000
 
 ## Vite OpenCode Proxy
 
-During local frontend development, Vite proxies browser requests from `/opencode` to the FastAPI backend at `http://127.0.0.1:15000` by default. The Vite proxy does not rewrite this route: `/opencode/session` reaches FastAPI as `/opencode/session`, and FastAPI strips only the `/opencode` parent prefix before forwarding the request to the real OpenCode upstream.
+During local frontend development, Vite keeps the browser-facing OpenCode contract at `/opencode`. The proxy target depends on `palaver.control_plane` from `release.config.json`.
 
-This FastAPI passthrough is the normal local browser path. Keep the Svelte app and SDK clients pointed at `/opencode` so browser traffic exercises the same FastAPI boundary used for path rewriting, streaming passthrough, and future backend-owned integrations.
+With `palaver.control_plane` disabled, Palaver runs as a thin client to `opencode serve`. Vite proxies `/opencode` to the configured OpenCode server target at `http://127.0.0.1:18000` by default and strips only the browser-facing parent prefix before forwarding upstream: `/opencode/session` becomes `/session`, and `/opencode/event` becomes `/event`.
 
-Configure the backend proxy target with `PALAVER_BACKEND_URL`:
+With `palaver.control_plane` enabled, Vite proxies `/opencode` to the FastAPI backend at `http://127.0.0.1:15000` without rewriting. In that mode `/opencode/session` reaches FastAPI as `/opencode/session`, and FastAPI strips only the `/opencode` parent prefix before forwarding the request to the real OpenCode upstream.
+
+Configure the thin-client OpenCode target with `PALAVER_OPENCODE_SERVER_URL`, or `OPENCODE_URL` as a fallback:
+
+```bash
+PALAVER_OPENCODE_SERVER_URL=http://127.0.0.1:18000 npm run dev
+```
+
+Configure the control-plane backend proxy target with `PALAVER_BACKEND_URL`:
 
 ```bash
 PALAVER_BACKEND_URL=http://127.0.0.1:15000 npm run dev
 ```
 
-The Svelte controllers and direct browser fetches continue to call `/opencode`; only Vite's local development target changes.
-
-There is no direct-to-OpenCode Vite proxy mode in the default configuration. If you need to isolate an OpenCode server while debugging, call that server directly from a terminal or API client, or start FastAPI with `OPENCODE_URL` pointed at the alternate OpenCode server. Do not repoint the browser-facing `/opencode` route at OpenCode directly unless you are intentionally bypassing Palaver's backend passthrough for a temporary local experiment.
+The Svelte controllers and direct browser fetches continue to call `/opencode`; only Vite's local development target and rewrite behavior change with the release topology.
 
 ## Health Check
 
