@@ -62,3 +62,21 @@ curl -N http://127.0.0.1:8000/opencode/event
 ```
 
 Events should appear as they are emitted by the upstream, not only after the upstream closes the response.
+
+## Local Convex Schema
+
+Palaver's local Convex files live in `convex/`, configured by `convex.json`. The initial schema defines one minimal `events` table with `id`, `source`, and `payload` fields so later work can add event storage without changing the current Svelte behavior yet.
+
+The Svelte app initializes Convex through `src/lib/convexClient.js` and `src/controllers/ConvexController.svelte.js`. By default the browser client targets the self-hosted Convex backend at `http://127.0.0.1:3210`; override that target during local development with `VITE_CONVEX_URL`.
+
+```bash
+VITE_CONVEX_URL=http://127.0.0.1:3210 npm run dev
+```
+
+The controller exposes a lightweight `verifyConnection()` path that calls the Convex health endpoint, so future UI or diagnostics can confirm the configured local Convex service is reachable without changing the existing `/opencode` frontend contract.
+
+Validate the local Convex files with:
+
+```bash
+npx convex codegen
+```
