@@ -90,6 +90,35 @@ PALAVER_BACKEND_URL=http://127.0.0.1:15000 npm run dev
 
 The Svelte controllers and direct browser fetches continue to call `/opencode`; only Vite's local development target and rewrite behavior change with the release topology.
 
+## Local Startup Modes
+
+Palaver has two local OpenCode-backed startup modes. In both modes, browser-facing OpenCode calls stay on `/opencode`; the difference is whether Vite forwards those calls directly to `opencode serve` or through the FastAPI control plane.
+
+### Thin-Client Mode
+
+Thin-client mode is the default because `release.config.json` defines `palaver.control_plane` as `false`. Start OpenCode on the default local server port, then start Vite:
+
+```bash
+opencode serve --port 18000 --hostname 0.0.0.0
+PALAVER_OPENCODE_SERVER_URL=http://127.0.0.1:18000 npm run dev
+```
+
+If `PALAVER_OPENCODE_SERVER_URL` is omitted, Vite falls back to `OPENCODE_URL`, then `http://127.0.0.1:18000`. In this mode Vite proxies `/opencode` to OpenCode and strips only the parent prefix, so `/opencode/session` is forwarded upstream as `/session`.
+
+### FastAPI Control-Plane Mode
+
+Enable `palaver.control_plane` in `release.config.json` when you want Palaver-owned commands to go through FastAPI. Start OpenCode, start FastAPI on its default local port, then start Vite with the backend target:
+
+```bash
+opencode serve --port 18000 --hostname 0.0.0.0
+OPENCODE_URL=http://127.0.0.1:18000 uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 15000 --reload
+PALAVER_BACKEND_URL=http://127.0.0.1:15000 npm run dev
+```
+
+If `PALAVER_BACKEND_URL` is omitted, Vite targets `http://127.0.0.1:15000`. In this mode Vite preserves `/opencode`, so `/opencode/session` reaches FastAPI unchanged; FastAPI then strips `/opencode` before forwarding to the configured OpenCode upstream.
+
+`POST /session/new` is separate from `/opencode/*` because it is a Palaver control-plane command, not an OpenCode-compatible passthrough route. The endpoint creates an upstream OpenCode session through `OPENCODE_URL` while keeping Palaver-owned behavior outside the passthrough namespace.
+
 ## Health Check
 
 Verify the backend is running with:
