@@ -33,6 +33,8 @@ The backend owns the `/opencode` parent prefix and forwards HTTP requests to the
 
 Streaming OpenCode responses are forwarded with FastAPI streaming responses instead of being read fully into memory first. This keeps event and session streams consumable through the same `/opencode` client URL used by the Svelte controllers.
 
+Palaver's current OpenCode integration does not require websocket passthrough. The Svelte controllers and CLI helpers connect through the OpenCode SDK's HTTP streaming APIs, and the remaining direct calls are ordinary `/opencode/...` HTTP fetches. Because no current client code opens websocket upgrades under `/opencode`, the backend intentionally keeps the passthrough HTTP and streaming-response based instead of adding an unused websocket proxy.
+
 Configure the upstream with `OPENCODE_URL`:
 
 ```bash
