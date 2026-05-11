@@ -2,6 +2,8 @@ import { navigate } from '../lib/navigation.js';
 import { SessionListController } from './SessionListController.svelte.js';
 
 export class PSessionListController extends SessionListController {
+  navigate = navigate;
+
   async createSession(projectId) {
     console.log(`[PSessionListController::createSession] - started for project ${projectId}`);
     this.error = null;
@@ -33,7 +35,7 @@ export class PSessionListController extends SessionListController {
         this.error = JSON.stringify(data);
       } else if (data?.id) {
         console.log(`[PSessionListController::createSession] - session created, redirecting to /session/${projectId}/${data.id}`);
-        await navigate(`/session/${projectId}/${data.id}`);
+        await this.navigate(`/session/${projectId}/${data.id}`);
       }
     } catch (err) {
       console.error(`[PSessionListController::createSession] - caught exception:`, err);
