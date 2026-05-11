@@ -16,6 +16,16 @@ function testConfiguredLocalServiceTargets() {
 }
 
 /**
+ * Tests that default local FastAPI and OpenCode service targets use the documented ports.
+ */
+function testDefaultLocalServiceTargets() {
+  const targets = createLocalServiceTargets({});
+
+  assert.equal(targets.fastApiUrl, 'http://127.0.0.1:15000');
+  assert.equal(targets.opencodeServerUrl, 'http://127.0.0.1:18000');
+}
+
+/**
  * Tests that Vite routes Convex HTTP and websocket traffic to the local self-hosted backend by default.
  */
 function testDefaultConvexProxyTarget() {
@@ -50,3 +60,4 @@ test('uses the default local Convex proxy target', testDefaultConvexProxyTarget)
 test('uses a configured Convex proxy target', testConfiguredConvexProxyTarget);
 test('rewrites the browser-facing Convex proxy prefix', testConvexProxyRewrite);
 test('derives local service targets from environment values', testConfiguredLocalServiceTargets);
+test('uses default local FastAPI and OpenCode service target ports', testDefaultLocalServiceTargets);
