@@ -13,6 +13,27 @@ uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 8000 --reload
 
 The default local backend URL is `http://127.0.0.1:8000`.
 
+## Start OpenCode
+
+Start OpenCode in server mode before using Palaver's `/opencode` routes. The FastAPI backend defaults to an OpenCode upstream at `http://127.0.0.1:5000`, so the matching local command is:
+
+```bash
+opencode serve --port 5000 --hostname 0.0.0.0
+```
+
+If you prefer the existing direct OpenCode convention from `GettingStarted.md`, start OpenCode on port `4096` instead and set `OPENCODE_URL` when starting FastAPI:
+
+```bash
+opencode serve --port 4096
+OPENCODE_URL=http://127.0.0.1:4096 uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Attach the OpenCode TUI to the same server when you want to drive a session from the terminal:
+
+```bash
+opencode attach http://127.0.0.1:5000
+```
+
 ## Vite OpenCode Proxy
 
 During local frontend development, Vite proxies browser requests from `/opencode` to the FastAPI backend at `http://127.0.0.1:8000` by default. Vite keeps the `/opencode` prefix intact because FastAPI owns that parent route and strips it before forwarding to the real OpenCode upstream.
