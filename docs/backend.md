@@ -32,7 +32,7 @@ The Convex launcher also exports `CONVEX_SELF_HOSTED_URL` and `CONVEX_SELF_HOSTE
 
 ## Local Release Configuration
 
-Local release flags live in `release.config.json`. The file uses GrowthBook-compatible dotted feature names and currently defines `palaver.control_plane` with a deterministic default of `false`, so Palaver starts in thin-client mode until a later control-plane slice wires flag parsing into Vite and the Svelte app.
+Local release flags live in `release.config.json`. The file uses GrowthBook-compatible dotted feature names and currently defines `palaver.control_plane` with a deterministic default of `false`, so Palaver starts in thin-client mode. Frontend callers should read that decision through `src/lib/releaseFlags.js` instead of parsing the release configuration directly.
 
 Verify the FastAPI process is accepting requests by checking its health endpoint:
 
