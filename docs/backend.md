@@ -48,7 +48,7 @@ opencode attach http://127.0.0.1:5000
 
 ## Vite OpenCode Proxy
 
-During local frontend development, Vite proxies browser requests from `/opencode` to the FastAPI backend at `http://127.0.0.1:8000` by default. Vite keeps the `/opencode` prefix intact because FastAPI owns that parent route and strips it before forwarding to the real OpenCode upstream.
+During local frontend development, Vite proxies browser requests from `/opencode` to the FastAPI backend at `http://127.0.0.1:8000` by default. The Vite proxy does not rewrite this route: `/opencode/session` reaches FastAPI as `/opencode/session`, and FastAPI strips only the `/opencode` parent prefix before forwarding the request to the real OpenCode upstream.
 
 Configure the backend proxy target with `PALAVER_BACKEND_URL`:
 
