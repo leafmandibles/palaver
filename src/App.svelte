@@ -3,23 +3,27 @@
   import Router from 'svelte-spa-router';
   import ProjectList from './ProjectList.svelte';
   import SessionHistory from './SessionHistory.svelte';
+  import PSessionHistory from './PSessionHistory.svelte';
   import Session from './Session.svelte';
   import Events from './Events.svelte';
   import ThemeSwitcher from './components/ThemeSwitcher.svelte';
   import Panels from './components/Panels.svelte';
   import Panel from './components/Panel.svelte';
   import { GlobalEvents } from './controllers/GlobalEvents.svelte.js';
+  import { releaseFlags } from './lib/releaseFlags.js';
+  import { createRoutes } from './lib/routes.js';
 
   const globalEvents = new GlobalEvents();
   setContext('global.events', globalEvents);
   onDestroy(() => globalEvents.destroy());
 
-  const routes = {
-    '/': ProjectList,
-    '/events': Events,
-    '/project/:project_id/sessions': SessionHistory,
-    '/session/:project_id/:session_id': Session,
-  };
+  const routes = createRoutes(releaseFlags, {
+    projectList: ProjectList,
+    events: Events,
+    thinClientSessionHistory: SessionHistory,
+    controlPlaneSessionHistory: PSessionHistory,
+    session: Session,
+  });
 </script>
 
 <main>
