@@ -28,7 +28,7 @@ def status():
 @app.api_route("/opencode", methods=["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"])
 @app.api_route("/opencode/{path:path}", methods=["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"])
 async def opencode_passthrough(request: Request, path: str = ""):
-    upstream_url = os.environ.get("OPENCODE_URL", "http://127.0.0.1:5000")
+    upstream_url = os.environ.get("OPENCODE_URL", "http://127.0.0.1:18000")
     upstream_path = f"/{path}" if path else "/"
     headers = {
         name: value

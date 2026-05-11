@@ -3,7 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 
 const DEFAULT_PALAVER_BACKEND_URL = 'http://127.0.0.1:15000'
 const DEFAULT_CONVEX_BACKEND_URL = 'http://127.0.0.1:3210'
-const DEFAULT_OPENCODE_SERVER_URL = 'http://127.0.0.1:5000'
+const DEFAULT_OPENCODE_SERVER_URL = 'http://127.0.0.1:18000'
 
 export function createLocalServiceTargets(env = process.env) {
   return {

@@ -21,9 +21,9 @@ Palaver's local services use these defaults:
 | --- | --- | --- |
 | Vite dev server | `http://127.0.0.1:5173` | Vite's `--host` and `--port` options |
 | FastAPI backend | `http://127.0.0.1:15000` | Uvicorn's `--host` and `--port` options |
-| OpenCode upstream for FastAPI | `http://127.0.0.1:5000` | `OPENCODE_URL` |
+| OpenCode upstream for FastAPI | `http://127.0.0.1:18000` | `OPENCODE_URL` |
 | Vite `/opencode` proxy target | `http://127.0.0.1:15000` | `PALAVER_BACKEND_URL` |
-| Local OpenCode server target for topology decisions | `http://127.0.0.1:5000` | `PALAVER_OPENCODE_SERVER_URL`, then `OPENCODE_URL` |
+| Local OpenCode server target for topology decisions | `http://127.0.0.1:18000` | `PALAVER_OPENCODE_SERVER_URL`, then `OPENCODE_URL` |
 | Browser Convex client target | `http://127.0.0.1:3210` | `VITE_CONVEX_URL` |
 | Vite `/convex` proxy target | `http://127.0.0.1:3210` | `PALAVER_CONVEX_BACKEND_URL` |
 | Self-hosted Convex backend | `http://127.0.0.1:3210` when started as shown below | `bin/run_convex.sh <instance_name> <secret> <backend_port> [data_folder]` |
@@ -49,10 +49,10 @@ It should return:
 
 ## Start OpenCode
 
-Start OpenCode in server mode before using Palaver's `/opencode` routes. The FastAPI backend defaults to an OpenCode upstream at `http://127.0.0.1:5000`, so the matching local command is:
+Start OpenCode in server mode before using Palaver's `/opencode` routes. The FastAPI backend defaults to an OpenCode upstream at `http://127.0.0.1:18000`, so the matching local command is:
 
 ```bash
-opencode serve --port 5000 --hostname 0.0.0.0
+opencode serve --port 18000 --hostname 0.0.0.0
 ```
 
 If you prefer the existing direct OpenCode convention from `GettingStarted.md`, start OpenCode on port `4096` instead and set `OPENCODE_URL` when starting FastAPI:
@@ -65,7 +65,7 @@ OPENCODE_URL=http://127.0.0.1:4096 uv run uvicorn palaver_backend.main:app --hos
 Attach the OpenCode TUI to the same server when you want to drive a session from the terminal:
 
 ```bash
-opencode attach http://127.0.0.1:5000
+opencode attach http://127.0.0.1:18000
 ```
 
 ## Vite OpenCode Proxy
@@ -109,10 +109,10 @@ Palaver's current OpenCode integration does not require websocket passthrough. T
 Configure the upstream with `OPENCODE_URL`:
 
 ```bash
-OPENCODE_URL=http://127.0.0.1:5000 uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 15000 --reload
+OPENCODE_URL=http://127.0.0.1:18000 uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 15000 --reload
 ```
 
-If `OPENCODE_URL` is not set, the backend defaults to `http://127.0.0.1:5000`.
+If `OPENCODE_URL` is not set, the backend defaults to `http://127.0.0.1:18000`.
 
 To manually verify incremental stream delivery, start the backend with `OPENCODE_URL` pointed at a streaming OpenCode-compatible upstream, then run:
 
