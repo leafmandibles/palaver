@@ -52,6 +52,42 @@ function testDefaultReleaseConfigUsesThinClientSessionHistory() {
 
 /**
  * """
+ * Tests that a disabled palaver.control_plane release config selects the thin-client history route.
+ * """
+ */
+function testDisabledReleaseConfigUsesThinClientSessionHistory() {
+  const flags = createReleaseFlags({
+    features: {
+      'palaver.control_plane': {
+        defaultValue: false,
+      },
+    },
+  });
+  const routes = createRoutes(flags, components);
+
+  assert.equal(routes['/project/:project_id/sessions'], components.thinClientSessionHistory);
+}
+
+/**
+ * """
+ * Tests that an enabled palaver.control_plane release config selects the control-plane history route.
+ * """
+ */
+function testEnabledReleaseConfigUsesControlPlaneSessionHistory() {
+  const flags = createReleaseFlags({
+    features: {
+      'palaver.control_plane': {
+        defaultValue: true,
+      },
+    },
+  });
+  const routes = createRoutes(flags, components);
+
+  assert.equal(routes['/project/:project_id/sessions'], components.controlPlaneSessionHistory);
+}
+
+/**
+ * """
  * Tests that route creation applies the selected session history component to project session URLs.
  * """
  */
@@ -96,6 +132,8 @@ function testControlPlaneSessionDetailRouteUsesOpenCodeSession() {
 test('selects control-plane session history when enabled', testControlPlaneSessionHistorySelection);
 test('selects thin-client session history when disabled', testThinClientSessionHistorySelection);
 test('uses thin-client session history with the default release config', testDefaultReleaseConfigUsesThinClientSessionHistory);
+test('uses thin-client session history with disabled release config', testDisabledReleaseConfigUsesThinClientSessionHistory);
+test('uses control-plane session history with enabled release config', testEnabledReleaseConfigUsesControlPlaneSessionHistory);
 test('uses the selected session history in app routes', testRoutesUseSelectedSessionHistory);
 test('uses OpenCode-compatible session detail routing in thin-client mode', testThinClientSessionDetailRouteUsesOpenCodeSession);
 test('uses OpenCode-compatible session detail routing in control-plane mode', testControlPlaneSessionDetailRouteUsesOpenCodeSession);
