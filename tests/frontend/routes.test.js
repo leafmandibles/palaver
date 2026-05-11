@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createReleaseFlags } from '../../src/lib/releaseFlags.js';
 import { createRoutes, selectSessionHistoryComponent } from '../../src/lib/routes.js';
 
 const components = {
@@ -35,6 +36,15 @@ function testThinClientSessionHistorySelection() {
 }
 
 /**
+ * Tests that the shipped default release config keeps the app on the thin-client history path.
+ */
+function testDefaultReleaseConfigUsesThinClientSessionHistory() {
+  const routes = createRoutes(createReleaseFlags(), components);
+
+  assert.equal(routes['/project/:project_id/sessions'], components.thinClientSessionHistory);
+}
+
+/**
  * Tests that route creation applies the selected session history component to project session URLs.
  */
 function testRoutesUseSelectedSessionHistory() {
@@ -49,4 +59,5 @@ function testRoutesUseSelectedSessionHistory() {
 
 test('selects control-plane session history when enabled', testControlPlaneSessionHistorySelection);
 test('selects thin-client session history when disabled', testThinClientSessionHistorySelection);
+test('uses thin-client session history with the default release config', testDefaultReleaseConfigUsesThinClientSessionHistory);
 test('uses the selected session history in app routes', testRoutesUseSelectedSessionHistory);
