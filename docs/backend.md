@@ -13,6 +13,18 @@ uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 8000 --reload
 
 The default local backend URL is `http://127.0.0.1:8000`.
 
+Verify the FastAPI process is accepting requests by checking its health endpoint:
+
+```bash
+curl http://127.0.0.1:8000/status
+```
+
+It should return:
+
+```json
+{"status":"ok"}
+```
+
 ## Start OpenCode
 
 Start OpenCode in server mode before using Palaver's `/opencode` routes. The FastAPI backend defaults to an OpenCode upstream at `http://127.0.0.1:5000`, so the matching local command is:
