@@ -40,6 +40,7 @@ async function testCreateSessionCallsControlPlaneEndpoint() {
   assert.equal(requests.length, 1);
   assert.equal(requests[0].url, '/session/new?directory=%2Fworkspace%2Fproject-1');
   assert.equal(requests[0].options.method, 'POST');
+  assert.equal(requests[0].options.headers['content-type'], 'application/json');
   assert.deepEqual(JSON.parse(requests[0].options.body), { title: 'New Session' });
 }
 
