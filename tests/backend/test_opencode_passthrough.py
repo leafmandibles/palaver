@@ -1,8 +1,11 @@
+import asyncio
+
 import httpx
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi import Response
 from fastapi.testclient import TestClient
+from starlette.responses import StreamingResponse
 
 from palaver_backend.main import app
 from palaver_backend import main as backend_main
@@ -83,3 +86,32 @@ def test_opencode_passthrough_does_not_forward_hop_by_hop_headers(monkeypatch):
         "te": None,
         "x_request_id": "request-1",
     }
+
+
+def test_opencode_passthrough_forwards_streaming_response(monkeypatch):
+    """Test that streamed OpenCode response chunks are forwarded by the passthrough route."""
+    upstream = FastAPI()
+
+    @upstream.get("/events")
+    async def events():
+        async def body():
+            yield b"event: start\n\n"
+            await asyncio.sleep(0)
+            yield b"event: end\n\n"
+
+        return StreamingResponse(body(), media_type="text/event-stream", status_code=206)
+
+    transport = httpx.ASGITransport(app=upstream)
+    async_client = httpx.AsyncClient
+    monkeypatch.setattr(
+        backend_main.httpx,
+        "AsyncClient",
+        lambda **kwargs: async_client(transport=transport, base_url=kwargs["base_url"]),
+    )
+
+    client = TestClient(app)
+
+    with client.stream("GET", "/opencode/events") as response:
+        assert response.status_code == 206
+        assert response.headers["content-type"].startswith("text/event-stream")
+        assert b"".join(response.iter_bytes()) == b"event: start\n\nevent: end\n\n"

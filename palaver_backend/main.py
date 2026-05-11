@@ -2,8 +2,9 @@ import os
 
 from fastapi import FastAPI
 from fastapi import Request
-from fastapi import Response
 import httpx
+from starlette.background import BackgroundTask
+from starlette.responses import StreamingResponse
 
 app = FastAPI(title="Palaver Backend")
 
@@ -29,21 +30,21 @@ def status():
 async def opencode_passthrough(request: Request, path: str = ""):
     upstream_url = os.environ.get("OPENCODE_URL", "http://127.0.0.1:5000")
     upstream_path = f"/{path}" if path else "/"
-    body = await request.body()
     headers = {
         name: value
         for name, value in request.headers.items()
         if name.lower() not in HOP_BY_HOP_HEADERS and name.lower() != "host"
     }
 
-    async with httpx.AsyncClient(base_url=upstream_url, timeout=None) as client:
-        upstream_response = await client.request(
-            request.method,
-            upstream_path,
-            params=request.query_params,
-            content=body,
-            headers=headers,
-        )
+    client = httpx.AsyncClient(base_url=upstream_url, timeout=None)
+    upstream_request = client.build_request(
+        request.method,
+        upstream_path,
+        params=request.query_params,
+        content=request.stream(),
+        headers=headers,
+    )
+    upstream_response = await client.send(upstream_request, stream=True)
 
     response_headers = {
         name: value
@@ -51,8 +52,13 @@ async def opencode_passthrough(request: Request, path: str = ""):
         if name.lower() not in HOP_BY_HOP_HEADERS
     }
 
-    return Response(
-        content=upstream_response.content,
+    async def close_upstream():
+        await upstream_response.aclose()
+        await client.aclose()
+
+    return StreamingResponse(
+        upstream_response.aiter_raw(),
         status_code=upstream_response.status_code,
         headers=response_headers,
+        background=BackgroundTask(close_upstream),
     )

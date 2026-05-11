@@ -31,6 +31,8 @@ The endpoint returns:
 
 The backend owns the `/opencode` parent prefix and forwards HTTP requests to the configured OpenCode upstream after stripping that parent prefix. For example, `POST /opencode/session` is forwarded upstream as `POST /session` with the original query string and request body.
 
+Streaming OpenCode responses are forwarded with FastAPI streaming responses instead of being read fully into memory first. This keeps event and session streams consumable through the same `/opencode` client URL used by the Svelte controllers.
+
 Configure the upstream with `OPENCODE_URL`:
 
 ```bash
@@ -38,3 +40,11 @@ OPENCODE_URL=http://127.0.0.1:5000 uv run uvicorn palaver_backend.main:app --hos
 ```
 
 If `OPENCODE_URL` is not set, the backend defaults to `http://127.0.0.1:5000`.
+
+To manually verify incremental stream delivery, start the backend with `OPENCODE_URL` pointed at a streaming OpenCode-compatible upstream, then run:
+
+```bash
+curl -N http://127.0.0.1:8000/opencode/event
+```
+
+Events should appear as they are emitted by the upstream, not only after the upstream closes the response.
