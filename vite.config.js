@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
-const DEFAULT_PALAVER_BACKEND_URL = 'http://127.0.0.1:8000'
+const DEFAULT_PALAVER_BACKEND_URL = 'http://127.0.0.1:15000'
 const DEFAULT_CONVEX_BACKEND_URL = 'http://127.0.0.1:3210'
 const DEFAULT_OPENCODE_SERVER_URL = 'http://127.0.0.1:5000'
 

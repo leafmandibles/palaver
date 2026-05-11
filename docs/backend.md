@@ -8,10 +8,10 @@ Install the Python dependencies, then start the backend from the repository root
 
 ```bash
 uv sync --dev
-uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 8000 --reload
+uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 15000 --reload
 ```
 
-The default local backend URL is `http://127.0.0.1:8000`.
+The default local backend URL is `http://127.0.0.1:15000`.
 
 ## Default Ports And Environment Variables
 
@@ -20,9 +20,9 @@ Palaver's local services use these defaults:
 | Service | Default | Config |
 | --- | --- | --- |
 | Vite dev server | `http://127.0.0.1:5173` | Vite's `--host` and `--port` options |
-| FastAPI backend | `http://127.0.0.1:8000` | Uvicorn's `--host` and `--port` options |
+| FastAPI backend | `http://127.0.0.1:15000` | Uvicorn's `--host` and `--port` options |
 | OpenCode upstream for FastAPI | `http://127.0.0.1:5000` | `OPENCODE_URL` |
-| Vite `/opencode` proxy target | `http://127.0.0.1:8000` | `PALAVER_BACKEND_URL` |
+| Vite `/opencode` proxy target | `http://127.0.0.1:15000` | `PALAVER_BACKEND_URL` |
 | Local OpenCode server target for topology decisions | `http://127.0.0.1:5000` | `PALAVER_OPENCODE_SERVER_URL`, then `OPENCODE_URL` |
 | Browser Convex client target | `http://127.0.0.1:3210` | `VITE_CONVEX_URL` |
 | Vite `/convex` proxy target | `http://127.0.0.1:3210` | `PALAVER_CONVEX_BACKEND_URL` |
@@ -38,7 +38,7 @@ Local release flags live in `release.config.json`. The file uses GrowthBook-comp
 Verify the FastAPI process is accepting requests by checking its health endpoint:
 
 ```bash
-curl http://127.0.0.1:8000/status
+curl http://127.0.0.1:15000/status
 ```
 
 It should return:
@@ -59,7 +59,7 @@ If you prefer the existing direct OpenCode convention from `GettingStarted.md`, 
 
 ```bash
 opencode serve --port 4096
-OPENCODE_URL=http://127.0.0.1:4096 uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 8000 --reload
+OPENCODE_URL=http://127.0.0.1:4096 uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 15000 --reload
 ```
 
 Attach the OpenCode TUI to the same server when you want to drive a session from the terminal:
@@ -70,14 +70,14 @@ opencode attach http://127.0.0.1:5000
 
 ## Vite OpenCode Proxy
 
-During local frontend development, Vite proxies browser requests from `/opencode` to the FastAPI backend at `http://127.0.0.1:8000` by default. The Vite proxy does not rewrite this route: `/opencode/session` reaches FastAPI as `/opencode/session`, and FastAPI strips only the `/opencode` parent prefix before forwarding the request to the real OpenCode upstream.
+During local frontend development, Vite proxies browser requests from `/opencode` to the FastAPI backend at `http://127.0.0.1:15000` by default. The Vite proxy does not rewrite this route: `/opencode/session` reaches FastAPI as `/opencode/session`, and FastAPI strips only the `/opencode` parent prefix before forwarding the request to the real OpenCode upstream.
 
 This FastAPI passthrough is the normal local browser path. Keep the Svelte app and SDK clients pointed at `/opencode` so browser traffic exercises the same FastAPI boundary used for path rewriting, streaming passthrough, and future backend-owned integrations.
 
 Configure the backend proxy target with `PALAVER_BACKEND_URL`:
 
 ```bash
-PALAVER_BACKEND_URL=http://127.0.0.1:8000 npm run dev
+PALAVER_BACKEND_URL=http://127.0.0.1:15000 npm run dev
 ```
 
 The Svelte controllers and direct browser fetches continue to call `/opencode`; only Vite's local development target changes.
@@ -89,7 +89,7 @@ There is no direct-to-OpenCode Vite proxy mode in the default configuration. If 
 Verify the backend is running with:
 
 ```bash
-curl http://127.0.0.1:8000/status
+curl http://127.0.0.1:15000/status
 ```
 
 The endpoint returns:
@@ -109,7 +109,7 @@ Palaver's current OpenCode integration does not require websocket passthrough. T
 Configure the upstream with `OPENCODE_URL`:
 
 ```bash
-OPENCODE_URL=http://127.0.0.1:5000 uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 8000 --reload
+OPENCODE_URL=http://127.0.0.1:5000 uv run uvicorn palaver_backend.main:app --host 127.0.0.1 --port 15000 --reload
 ```
 
 If `OPENCODE_URL` is not set, the backend defaults to `http://127.0.0.1:5000`.
@@ -117,7 +117,7 @@ If `OPENCODE_URL` is not set, the backend defaults to `http://127.0.0.1:5000`.
 To manually verify incremental stream delivery, start the backend with `OPENCODE_URL` pointed at a streaming OpenCode-compatible upstream, then run:
 
 ```bash
-curl -N http://127.0.0.1:8000/opencode/event
+curl -N http://127.0.0.1:15000/opencode/event
 ```
 
 Events should appear as they are emitted by the upstream, not only after the upstream closes the response.
