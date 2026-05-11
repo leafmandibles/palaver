@@ -58,7 +58,7 @@ function testThinClientOpencodeProxyRewrite() {
 }
 
 /**
- * Tests that enabled control-plane mode preserves the FastAPI passthrough target and path contract.
+ * Tests that enabled control-plane mode routes browser OpenCode requests to the configured FastAPI backend.
  */
 function testControlPlaneOpencodeProxyTarget() {
   const proxy = createDevProxy(
@@ -71,6 +71,19 @@ function testControlPlaneOpencodeProxyTarget() {
   );
 
   assert.equal(proxy['/opencode'].target, 'http://127.0.0.1:15002');
+}
+
+/**
+ * Tests that enabled control-plane mode preserves the browser-facing OpenCode path for FastAPI.
+ */
+function testControlPlaneOpencodeProxyPreservesPath() {
+  const proxy = createDevProxy(
+    {},
+    {
+      isControlPlaneEnabled: () => true
+    }
+  );
+
   assert.equal(proxy['/opencode'].rewrite, undefined);
 }
 
@@ -112,4 +125,5 @@ test('derives local service targets from environment values', testConfiguredLoca
 test('uses default local FastAPI and OpenCode service target ports', testDefaultLocalServiceTargets);
 test('routes thin-client OpenCode traffic to the configured OpenCode server', testThinClientOpencodeProxyTarget);
 test('rewrites thin-client OpenCode paths by stripping the parent prefix', testThinClientOpencodeProxyRewrite);
-test('routes control-plane OpenCode traffic to FastAPI without rewriting', testControlPlaneOpencodeProxyTarget);
+test('routes control-plane OpenCode traffic to FastAPI', testControlPlaneOpencodeProxyTarget);
+test('preserves control-plane OpenCode paths for FastAPI', testControlPlaneOpencodeProxyPreservesPath);
