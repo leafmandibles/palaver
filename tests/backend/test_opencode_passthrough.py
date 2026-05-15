@@ -25,6 +25,45 @@ def test_opencode_upstream_url_uses_environment_override(monkeypatch):
     assert backend_main.get_opencode_upstream_url() == "http://opencode.example.test"
 
 
+def test_opencode_routes_share_configured_upstream(monkeypatch):
+    """Test that passthrough and session creation use the same configured OpenCode upstream."""
+    upstream = FastAPI()
+    received_paths = []
+
+    @upstream.get("/project")
+    async def project():
+        received_paths.append("/project")
+        return {"route": "passthrough"}
+
+    @upstream.post("/session")
+    async def session():
+        received_paths.append("/session")
+        return {"route": "session"}
+
+    monkeypatch.setenv("OPENCODE_URL", "http://shared-opencode.test")
+    transport = httpx.ASGITransport(app=upstream)
+    async_client = httpx.AsyncClient
+    observed_base_urls = []
+
+    def async_client_factory(**kwargs):
+        observed_base_urls.append(str(kwargs["base_url"]).rstrip("/"))
+        return async_client(transport=transport, base_url=kwargs["base_url"])
+
+    monkeypatch.setattr(backend_main.httpx, "AsyncClient", async_client_factory)
+
+    client = TestClient(app)
+
+    passthrough_response = client.get("/opencode/project")
+    session_response = client.post("/session/new", json={"title": "New Session"})
+
+    assert passthrough_response.status_code == 200
+    assert passthrough_response.json() == {"route": "passthrough"}
+    assert session_response.status_code == 200
+    assert session_response.json() == {"route": "session"}
+    assert received_paths == ["/project", "/session"]
+    assert observed_base_urls == ["http://shared-opencode.test", "http://shared-opencode.test"]
+
+
 def test_opencode_passthrough_preserves_request_and_response(monkeypatch):
     """Test that /opencode forwards the rewritten path, method, query, body, status, and body."""
     upstream = FastAPI()
