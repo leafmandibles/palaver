@@ -41,6 +41,13 @@ cp .env.example .env
 
 Prefer the full URL variables in `.env.example` over relying on nested variable expansion. Different dotenv consumers do not all expand values like `http://$HOST:$PORT` consistently, so the example repeats explicit URLs for each service boundary.
 
+Honcho loads `.env` and the `Procfile` consumes the same vocabulary for every local process. With no `.env` present, the Procfile falls back to OpenCode at `127.0.0.1:18000`, FastAPI at `127.0.0.1:15000`, Convex at `127.0.0.1:3210`, and Vite at `127.0.0.1:5173`.
+
+```bash
+cp .env.example .env
+honcho start
+```
+
 The key URLs are:
 
 | Variable | Purpose |

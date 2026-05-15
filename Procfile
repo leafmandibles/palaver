@@ -1,0 +1,4 @@
+opencode: opencode serve --port ${OPENCODE_PORT:-18000} --hostname ${OPENCODE_HOST:-127.0.0.1}
+backend: OPENCODE_URL=${OPENCODE_URL:-http://127.0.0.1:18000} uv run uvicorn palaver_backend.main:app --host ${PALAVER_BACKEND_HOST:-127.0.0.1} --port ${PALAVER_BACKEND_PORT:-15000} --reload
+convex: bin/run_convex.sh palaver password ${PALAVER_CONVEX_PORT:-3210}
+web: PALAVER_BACKEND_URL=${PALAVER_BACKEND_URL:-http://127.0.0.1:15000} PALAVER_OPENCODE_SERVER_URL=${PALAVER_OPENCODE_SERVER_URL:-http://127.0.0.1:18000} OPENCODE_URL=${OPENCODE_URL:-http://127.0.0.1:18000} PALAVER_CONVEX_BACKEND_URL=${PALAVER_CONVEX_BACKEND_URL:-http://127.0.0.1:3210} VITE_CONVEX_URL=${VITE_CONVEX_URL:-http://127.0.0.1:5173/convex} npm run dev -- --host ${PALAVER_WEB_HOST:-127.0.0.1} --port ${PALAVER_WEB_PORT:-5173}
