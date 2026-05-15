@@ -61,6 +61,14 @@ It should return:
 {"status":"ok"}
 ```
 
+Then verify Vite can reach the configured OpenCode upstream through the browser-facing `/opencode` route:
+
+```bash
+curl -I "http://${PALAVER_WEB_HOST:-127.0.0.1}:${PALAVER_WEB_PORT:-5173}/opencode/session"
+```
+
+This request should return an HTTP response from the configured OpenCode path instead of a Vite proxy connection error. A `405 Method Not Allowed` response is acceptable for this header-only smoke check because it confirms the proxy reached an upstream route; `ECONNREFUSED` or an empty response means Vite is targeting a host or port where no matching upstream is listening.
+
 The key URLs are:
 
 | Variable | Purpose |
