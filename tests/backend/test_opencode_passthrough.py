@@ -11,6 +11,20 @@ from palaver_backend.main import app
 from palaver_backend import main as backend_main
 
 
+def test_opencode_upstream_url_defaults_when_environment_is_unset(monkeypatch):
+    """Test that FastAPI resolves the default OpenCode upstream when OPENCODE_URL is unset."""
+    monkeypatch.delenv("OPENCODE_URL", raising=False)
+
+    assert backend_main.get_opencode_upstream_url() == "http://127.0.0.1:18000"
+
+
+def test_opencode_upstream_url_uses_environment_override(monkeypatch):
+    """Test that FastAPI resolves the OpenCode upstream from OPENCODE_URL when configured."""
+    monkeypatch.setenv("OPENCODE_URL", "http://opencode.example.test")
+
+    assert backend_main.get_opencode_upstream_url() == "http://opencode.example.test"
+
+
 def test_opencode_passthrough_preserves_request_and_response(monkeypatch):
     """Test that /opencode forwards the rewritten path, method, query, body, status, and body."""
     upstream = FastAPI()

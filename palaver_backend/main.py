@@ -9,6 +9,8 @@ from starlette.responses import StreamingResponse
 
 app = FastAPI(title="Palaver Backend")
 
+DEFAULT_OPENCODE_URL = "http://127.0.0.1:18000"
+
 HOP_BY_HOP_HEADERS = {
     "connection",
     "keep-alive",
@@ -21,6 +23,10 @@ HOP_BY_HOP_HEADERS = {
 }
 
 
+def get_opencode_upstream_url():
+    return os.environ.get("OPENCODE_URL", DEFAULT_OPENCODE_URL)
+
+
 @app.get("/status")
 def status():
     return {"status": "ok"}
@@ -28,7 +34,7 @@ def status():
 
 @app.post("/session/new")
 async def create_session(request: Request):
-    upstream_url = os.environ.get("OPENCODE_URL", "http://127.0.0.1:18000")
+    upstream_url = get_opencode_upstream_url()
     headers = {
         name: value
         for name, value in request.headers.items()
@@ -60,7 +66,7 @@ async def create_session(request: Request):
 @app.api_route("/opencode", methods=["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"])
 @app.api_route("/opencode/{path:path}", methods=["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"])
 async def opencode_passthrough(request: Request, path: str = ""):
-    upstream_url = os.environ.get("OPENCODE_URL", "http://127.0.0.1:18000")
+    upstream_url = get_opencode_upstream_url()
     upstream_path = f"/{path}" if path else "/"
     headers = {
         name: value
