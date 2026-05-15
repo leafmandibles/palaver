@@ -31,9 +31,9 @@ Palaver's local services use these defaults:
 
 The Convex launcher also exports `CONVEX_SELF_HOSTED_URL` and `CONVEX_SELF_HOSTED_ADMIN_KEY` for the `npx convex deploy` process it starts. Contributors normally do not need to set those variables manually.
 
-## Example Local Environment
+## Honcho Startup With `.env.example`
 
-Use `.env.example` as the copyable starting point for local startup. It defines host, port, and explicit URL values for OpenCode, FastAPI, Convex, and the Palaver UI:
+Use `.env.example` as the copyable starting point for Honcho-based local startup. It defines host, port, and explicit URL values for OpenCode, FastAPI, Convex, and the Palaver UI:
 
 ```bash
 cp .env.example .env
@@ -41,12 +41,13 @@ cp .env.example .env
 
 Prefer the full URL variables in `.env.example` over relying on nested variable expansion. Different dotenv consumers do not all expand values like `http://$HOST:$PORT` consistently, so the example repeats explicit URLs for each service boundary.
 
-Honcho loads `.env` and the `Procfile` consumes the same vocabulary for every local process. With no `.env` present, the Procfile falls back to OpenCode at `127.0.0.1:18000`, FastAPI at `127.0.0.1:15000`, Convex at `127.0.0.1:3210`, and Vite at `127.0.0.1:5173`.
+Honcho loads `.env` automatically from the repository root, and the `Procfile` consumes the same vocabulary for every local process. Start the full local topology with:
 
 ```bash
-cp .env.example .env
 honcho start
 ```
+
+With the example environment unchanged, Honcho starts OpenCode on `127.0.0.1:18000`, FastAPI on `127.0.0.1:15000`, Convex on `127.0.0.1:3210`, and Vite on `127.0.0.1:5173`. With no `.env` present, the `Procfile` falls back to those same default addresses.
 
 The key URLs are:
 
