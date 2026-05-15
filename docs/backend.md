@@ -31,6 +31,28 @@ Palaver's local services use these defaults:
 
 The Convex launcher also exports `CONVEX_SELF_HOSTED_URL` and `CONVEX_SELF_HOSTED_ADMIN_KEY` for the `npx convex deploy` process it starts. Contributors normally do not need to set those variables manually.
 
+## Example Local Environment
+
+Use `.env.example` as the copyable starting point for local startup. It defines host, port, and explicit URL values for OpenCode, FastAPI, Convex, and the Palaver UI:
+
+```bash
+cp .env.example .env
+```
+
+Prefer the full URL variables in `.env.example` over relying on nested variable expansion. Different dotenv consumers do not all expand values like `http://$HOST:$PORT` consistently, so the example repeats explicit URLs for each service boundary.
+
+The key URLs are:
+
+| Variable | Purpose |
+| --- | --- |
+| `OPENCODE_URL` | FastAPI's upstream OpenCode server URL. |
+| `PALAVER_OPENCODE_SERVER_URL` | Vite's direct OpenCode target when `palaver.control_plane` is disabled. |
+| `PALAVER_BACKEND_URL` | Vite's FastAPI target when `palaver.control_plane` is enabled. |
+| `PALAVER_CONVEX_BACKEND_URL` | Vite's local Convex backend proxy target. |
+| `VITE_CONVEX_URL` | Browser-exposed Convex client URL. |
+
+The `palaver.control_plane` release flag changes only the `/opencode` target and rewrite behavior. With the flag disabled, Vite targets `PALAVER_OPENCODE_SERVER_URL` and strips `/opencode` before forwarding to OpenCode. With the flag enabled, Vite targets `PALAVER_BACKEND_URL` and preserves `/opencode` so FastAPI owns the passthrough route.
+
 ## Local Release Configuration
 
 Local release flags live in `release.config.json`. The file uses GrowthBook-compatible dotted feature names and currently defines `palaver.control_plane` with a deterministic default of `false`, so Palaver starts in thin-client mode. Frontend callers should read that decision through `src/lib/releaseFlags.js` instead of parsing the release configuration directly.
