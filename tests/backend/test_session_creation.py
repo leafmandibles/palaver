@@ -39,6 +39,37 @@ def test_session_new_forwards_title_and_directory_to_opencode(monkeypatch):
     assert response.json() == {"id": "session-1", "title": "New Session"}
 
 
+def test_session_new_preserves_upstream_response_details(monkeypatch):
+    """Test that /session/new preserves upstream OpenCode session response status and headers."""
+    upstream = FastAPI()
+
+    @upstream.post("/session")
+    async def session():
+        return Response(
+            content=b'{"id":"session-2"}',
+            status_code=201,
+            headers={"x-opencode-session": "session-2"},
+            media_type="application/json",
+        )
+
+    transport = httpx.ASGITransport(app=upstream)
+    async_client = httpx.AsyncClient
+    monkeypatch.setattr(
+        backend_main.httpx,
+        "AsyncClient",
+        lambda **kwargs: async_client(transport=transport, base_url=kwargs["base_url"]),
+    )
+
+    client = TestClient(app)
+
+    response = client.post("/session/new", json={"title": "New Session"})
+
+    assert response.status_code == 201
+    assert response.headers["x-opencode-session"] == "session-2"
+    assert response.headers["content-type"].startswith("application/json")
+    assert response.json() == {"id": "session-2"}
+
+
 def test_session_new_returns_upstream_errors_predictably(monkeypatch):
     """Test that /session/new returns upstream OpenCode session creation errors unchanged."""
     upstream = FastAPI()
