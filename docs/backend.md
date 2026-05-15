@@ -71,6 +71,8 @@ This request should return an HTTP response from the configured OpenCode path in
 
 In the default thin-client mode, `palaver.control_plane` is disabled and Vite sends `/opencode` traffic directly to the configured OpenCode server target. With `.env.example` unchanged, that target is `PALAVER_OPENCODE_SERVER_URL=http://127.0.0.1:18000`; if that variable is absent, Vite falls back to `OPENCODE_URL`, then `http://127.0.0.1:18000`. The smoke check should therefore prove that OpenCode itself is listening on the configured OpenCode address. FastAPI can still be running for its health endpoint, but it is not on the `/opencode` request path in thin-client mode.
 
+In control-plane mode, `palaver.control_plane` is enabled and Vite sends `/opencode` traffic to the configured FastAPI backend target instead. With `.env.example` unchanged, that target is `PALAVER_BACKEND_URL=http://127.0.0.1:15000`; FastAPI then forwards the request to `OPENCODE_URL=http://127.0.0.1:18000` after stripping the `/opencode` prefix. The same `/opencode/session` smoke check should therefore prove both that Vite can reach FastAPI at `PALAVER_BACKEND_URL` and that FastAPI can reach the configured OpenCode upstream.
+
 Finally, confirm the Palaver UI is available at the configured Vite host and port:
 
 ```bash
