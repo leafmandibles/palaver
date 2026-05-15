@@ -69,6 +69,14 @@ curl -I "http://${PALAVER_WEB_HOST:-127.0.0.1}:${PALAVER_WEB_PORT:-5173}/opencod
 
 This request should return an HTTP response from the configured OpenCode path instead of a Vite proxy connection error. A `405 Method Not Allowed` response is acceptable for this header-only smoke check because it confirms the proxy reached an upstream route; `ECONNREFUSED` or an empty response means Vite is targeting a host or port where no matching upstream is listening.
 
+Finally, confirm the Palaver UI is available at the configured Vite host and port:
+
+```bash
+curl -I "http://${PALAVER_WEB_HOST:-127.0.0.1}:${PALAVER_WEB_PORT:-5173}/"
+```
+
+This request should return a successful Vite response such as `200 OK`. If it fails to connect, check that the Honcho `web` process is still running and that `PALAVER_WEB_HOST` and `PALAVER_WEB_PORT` match the address you are checking.
+
 The key URLs are:
 
 | Variable | Purpose |
