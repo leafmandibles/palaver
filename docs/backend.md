@@ -69,6 +69,8 @@ curl -I "http://${PALAVER_WEB_HOST:-127.0.0.1}:${PALAVER_WEB_PORT:-5173}/opencod
 
 This request should return an HTTP response from the configured OpenCode path instead of a Vite proxy connection error. A `405 Method Not Allowed` response is acceptable for this header-only smoke check because it confirms the proxy reached an upstream route; `ECONNREFUSED` or an empty response means Vite is targeting a host or port where no matching upstream is listening.
 
+In the default thin-client mode, `palaver.control_plane` is disabled and Vite sends `/opencode` traffic directly to the configured OpenCode server target. With `.env.example` unchanged, that target is `PALAVER_OPENCODE_SERVER_URL=http://127.0.0.1:18000`; if that variable is absent, Vite falls back to `OPENCODE_URL`, then `http://127.0.0.1:18000`. The smoke check should therefore prove that OpenCode itself is listening on the configured OpenCode address. FastAPI can still be running for its health endpoint, but it is not on the `/opencode` request path in thin-client mode.
+
 Finally, confirm the Palaver UI is available at the configured Vite host and port:
 
 ```bash
