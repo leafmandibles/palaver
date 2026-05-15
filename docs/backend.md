@@ -93,6 +93,20 @@ The key URLs are:
 
 The `palaver.control_plane` release flag changes only the `/opencode` target and rewrite behavior. With the flag disabled, Vite targets `PALAVER_OPENCODE_SERVER_URL` and strips `/opencode` before forwarding to OpenCode. With the flag enabled, Vite targets `PALAVER_BACKEND_URL` and preserves `/opencode` so FastAPI owns the passthrough route.
 
+### Troubleshooting `ECONNREFUSED` Proxy Errors
+
+An `ECONNREFUSED` message from Vite means the proxy target resolved to a host and port where no service is listening. First check which topology is active, then compare the target variable with the process Honcho started:
+
+| Request path | Mode | Vite target to verify | Listening process |
+| --- | --- | --- | --- |
+| `/opencode/*` | Thin-client mode | `PALAVER_OPENCODE_SERVER_URL`, then `OPENCODE_URL`, then `http://127.0.0.1:18000` | `opencode serve` |
+| `/opencode/*` | Control-plane mode | `PALAVER_BACKEND_URL`, then `http://127.0.0.1:15000` | FastAPI backend |
+| `/convex/*` | Any mode | `PALAVER_CONVEX_BACKEND_URL`, then `http://127.0.0.1:3210` | Self-hosted Convex backend |
+
+If you changed a port in `.env`, update the matching full URL in the same file too. For example, changing `PALAVER_BACKEND_PORT=15001` also requires `PALAVER_BACKEND_URL=http://127.0.0.1:15001`; otherwise Vite will continue proxying to the stale URL value. Restart `honcho start` after changing `.env` so Vite, FastAPI, and the launcher processes read the same values.
+
+Use the smoke checks above to isolate the mismatch. A failing direct health check such as `curl "${PALAVER_BACKEND_URL:-http://127.0.0.1:15000}/status"` means the backend process is not listening at the configured backend URL. A successful direct check but failing `/opencode` or `/convex` request means Vite is using a different proxy target than the service URL you verified.
+
 ## Local Release Configuration
 
 Local release flags live in `release.config.json`. The file uses GrowthBook-compatible dotted feature names and currently defines `palaver.control_plane` with a deterministic default of `false`, so Palaver starts in thin-client mode. Frontend callers should read that decision through `src/lib/releaseFlags.js` instead of parsing the release configuration directly.
