@@ -65,18 +65,20 @@ def test_opencode_routes_share_configured_upstream(monkeypatch):
 
 
 def test_opencode_passthrough_preserves_request_and_response(monkeypatch):
-    """Test that /opencode forwards the rewritten path, method, query, body, status, and body."""
+    """Test that /opencode forwards request details and preserves response details."""
     upstream = FastAPI()
 
     @upstream.api_route("/session/{session_id}", methods=["PATCH"])
     async def session(session_id: str, request: Request):
         assert session_id == "abc123"
+        assert request.method == "PATCH"
         assert request.url.query == "include=messages&limit=1"
         assert await request.body() == b'{"text":"hello"}'
 
         return Response(
             content=b'{"proxied":true}',
             status_code=207,
+            headers={"x-opencode-session": "abc123"},
             media_type="application/json",
         )
 
@@ -98,6 +100,7 @@ def test_opencode_passthrough_preserves_request_and_response(monkeypatch):
     )
 
     assert response.status_code == 207
+    assert response.headers["x-opencode-session"] == "abc123"
     assert response.json() == {"proxied": True}
 
 
