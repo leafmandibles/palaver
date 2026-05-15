@@ -18,6 +18,34 @@ def test_opencode_upstream_url_defaults_when_environment_is_unset(monkeypatch):
     assert backend_main.get_opencode_upstream_url() == "http://127.0.0.1:18000"
 
 
+def test_opencode_passthrough_uses_default_upstream_when_environment_is_unset(monkeypatch):
+    """Test that /opencode uses the default OpenCode upstream when OPENCODE_URL is unset."""
+    upstream = FastAPI()
+    observed_base_urls = []
+
+    @upstream.get("/project")
+    async def project():
+        return {"route": "default-upstream"}
+
+    monkeypatch.delenv("OPENCODE_URL", raising=False)
+    transport = httpx.ASGITransport(app=upstream)
+    async_client = httpx.AsyncClient
+
+    def async_client_factory(**kwargs):
+        observed_base_urls.append(str(kwargs["base_url"]).rstrip("/"))
+        return async_client(transport=transport, base_url=kwargs["base_url"])
+
+    monkeypatch.setattr(backend_main.httpx, "AsyncClient", async_client_factory)
+
+    client = TestClient(app)
+
+    response = client.get("/opencode/project")
+
+    assert response.status_code == 200
+    assert response.json() == {"route": "default-upstream"}
+    assert observed_base_urls == ["http://127.0.0.1:18000"]
+
+
 def test_opencode_upstream_url_uses_environment_override(monkeypatch):
     """Test that FastAPI resolves the OpenCode upstream from OPENCODE_URL when configured."""
     monkeypatch.setenv("OPENCODE_URL", "http://opencode.example.test")
