@@ -3,26 +3,29 @@ import test from 'node:test';
 import { createDevProxy, createLocalServiceTargets } from '../../vite.config.js';
 
 /**
- * Tests that local FastAPI and OpenCode service targets can be derived from environment values.
+ * Tests that local FastAPI, OpenCode, and Convex service targets can be derived from environment values.
  */
 function testConfiguredLocalServiceTargets() {
   const targets = createLocalServiceTargets({
     PALAVER_BACKEND_URL: 'http://127.0.0.1:15001',
-    PALAVER_OPENCODE_SERVER_URL: 'http://127.0.0.1:18001'
+    PALAVER_OPENCODE_SERVER_URL: 'http://127.0.0.1:18001',
+    PALAVER_CONVEX_BACKEND_URL: 'http://127.0.0.1:3211'
   });
 
   assert.equal(targets.fastApiUrl, 'http://127.0.0.1:15001');
   assert.equal(targets.opencodeServerUrl, 'http://127.0.0.1:18001');
+  assert.equal(targets.convexBackendUrl, 'http://127.0.0.1:3211');
 }
 
 /**
- * Tests that default local FastAPI and OpenCode service targets use the documented ports.
+ * Tests that default local FastAPI, OpenCode, and Convex service targets use the documented ports.
  */
 function testDefaultLocalServiceTargets() {
   const targets = createLocalServiceTargets({});
 
   assert.equal(targets.fastApiUrl, 'http://127.0.0.1:15000');
   assert.equal(targets.opencodeServerUrl, 'http://127.0.0.1:18000');
+  assert.equal(targets.convexBackendUrl, 'http://127.0.0.1:3210');
 }
 
 /**

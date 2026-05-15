@@ -9,7 +9,8 @@ const DEFAULT_OPENCODE_SERVER_URL = 'http://127.0.0.1:18000'
 export function createLocalServiceTargets(env = process.env) {
   return {
     fastApiUrl: env.PALAVER_BACKEND_URL || DEFAULT_PALAVER_BACKEND_URL,
-    opencodeServerUrl: env.PALAVER_OPENCODE_SERVER_URL || env.OPENCODE_URL || DEFAULT_OPENCODE_SERVER_URL
+    opencodeServerUrl: env.PALAVER_OPENCODE_SERVER_URL || env.OPENCODE_URL || DEFAULT_OPENCODE_SERVER_URL,
+    convexBackendUrl: env.PALAVER_CONVEX_BACKEND_URL || DEFAULT_CONVEX_BACKEND_URL
   }
 }
 
@@ -34,7 +35,7 @@ export function createDevProxy(env = process.env, flags = releaseFlags) {
   return {
     '/opencode': createOpencodeProxy(targets, flags),
     '/convex': {
-      target: env.PALAVER_CONVEX_BACKEND_URL || DEFAULT_CONVEX_BACKEND_URL,
+      target: targets.convexBackendUrl,
       changeOrigin: true,
       ws: true,
       rewrite: (path) => path.replace(/^\/convex/, '')
