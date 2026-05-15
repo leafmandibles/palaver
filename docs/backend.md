@@ -49,6 +49,18 @@ honcho start
 
 With the example environment unchanged, Honcho starts OpenCode on `127.0.0.1:18000`, FastAPI on `127.0.0.1:15000`, Convex on `127.0.0.1:3210`, and Vite on `127.0.0.1:5173`. With no `.env` present, the `Procfile` falls back to those same default addresses.
 
+After Honcho starts, verify the FastAPI backend is listening at the configured backend URL:
+
+```bash
+curl "${PALAVER_BACKEND_URL:-http://127.0.0.1:15000}/status"
+```
+
+It should return:
+
+```json
+{"status":"ok"}
+```
+
 The key URLs are:
 
 | Variable | Purpose |
