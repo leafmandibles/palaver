@@ -39,6 +39,34 @@ def test_session_new_forwards_title_and_directory_to_opencode(monkeypatch):
     assert response.json() == {"id": "session-1", "title": "New Session"}
 
 
+def test_session_new_uses_configured_opencode_upstream(monkeypatch):
+    """Test that /session/new sends session creation to the OPENCODE_URL override."""
+    upstream = FastAPI()
+    observed_base_urls = []
+
+    @upstream.post("/session")
+    async def session():
+        return {"id": "session-override"}
+
+    monkeypatch.setenv("OPENCODE_URL", "http://configured-opencode.test")
+    transport = httpx.ASGITransport(app=upstream)
+    async_client = httpx.AsyncClient
+
+    def async_client_factory(**kwargs):
+        observed_base_urls.append(str(kwargs["base_url"]).rstrip("/"))
+        return async_client(transport=transport, base_url=kwargs["base_url"])
+
+    monkeypatch.setattr(backend_main.httpx, "AsyncClient", async_client_factory)
+
+    client = TestClient(app)
+
+    response = client.post("/session/new", json={"title": "New Session"})
+
+    assert response.status_code == 200
+    assert response.json() == {"id": "session-override"}
+    assert observed_base_urls == ["http://configured-opencode.test"]
+
+
 def test_session_new_preserves_upstream_response_details(monkeypatch):
     """Test that /session/new preserves upstream OpenCode session response status and headers."""
     upstream = FastAPI()
