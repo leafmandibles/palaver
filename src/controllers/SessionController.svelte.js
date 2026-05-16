@@ -131,7 +131,7 @@ export class SessionController {
   processEvent(data, sessionId) {
     // Skip empty/sync pings
     if (data === null || data === undefined || data.type === 'sync') {
-      return;
+      return { handled: false, becameIdle: false };
     }
 
     const eventType = data.type || data.event || 'unknown';
@@ -139,7 +139,7 @@ export class SessionController {
     // Filter session-specific events by sessionID
     const eventSessionId = data.properties?.sessionID;
     if (eventSessionId && eventSessionId !== sessionId) {
-      return;
+      return { handled: false, becameIdle: false };
     }
 
     if (eventType === 'session.error' && data.properties?.error) {
@@ -152,26 +152,26 @@ export class SessionController {
       const { partID, field, delta } = data.properties;
       const partType = data.properties.part?.type || 'text';
       
-      const existing = this.streamingParts.get(partID) || { type: partType };
-      existing.type = partType;
+      const existing = this.streamingParts.get(partID) || { id: partID, type: partType };
+      const updated = { ...existing, type: partType };
       
       if (partType === 'tool') {
         // Also capture tool name if available in the delta event
-        if (data.properties.part?.name) existing.name = data.properties.part.name;
-        if (data.properties.part?.tool) existing.toolName = data.properties.part.tool;
-        if (data.properties.part?.toolName) existing.toolName = data.properties.part.toolName;
+        if (data.properties.part?.name) updated.name = data.properties.part.name;
+        if (data.properties.part?.tool) updated.tool = data.properties.part.tool;
+        if (data.properties.part?.toolName) updated.toolName = data.properties.part.toolName;
         
         if (field === 'args' || field === 'input') {
-          existing.args = (existing.args || '') + delta;
+          updated.args = (updated.args || '') + delta;
         }
       } else if (field === 'text') {
-        existing.text = (existing.text || '') + delta;
+        updated.text = (updated.text || '') + delta;
       }
       
-      this.streamingParts.set(partID, existing);
+      this.streamingParts = new Map(this.streamingParts).set(partID, updated);
     } else if (eventType === 'message.part.updated') {
       const { part } = data.properties;
-      this.streamingParts.set(part.id, part);
+      this.streamingParts = new Map(this.streamingParts).set(part.id, part);
     } else if (eventType === 'session.status') {
       const status = data.properties?.status;
       if (status?.type === 'busy') {
@@ -183,13 +183,14 @@ export class SessionController {
       } else if (status?.type === 'idle') {
         this.isWorking = false;
         this.workingStatus = '';
-        this.streamingParts.clear();
+        this.streamingParts = new Map();
+        return { handled: true, becameIdle: true };
       }
     } else if (eventType === 'session.idle') {
       this.isWorking = false;
       this.workingStatus = '';
-      this.streamingParts.clear();
-      return;
+      this.streamingParts = new Map();
+      return { handled: true, becameIdle: true };
     }
 
     if (typeof data === 'object') {
@@ -200,6 +201,8 @@ export class SessionController {
        else if (data.properties?.part?.name) this.workingStatus = `Consulting agent: ${data.properties.part.name}...`;
        else if (eventType === 'message.part.delta' && data.properties?.field === 'text') this.workingStatus = 'Typing...';
     }
+
+    return { handled: true, becameIdle: false };
   }
 
   async checkSessionStatus(sessionId) {
@@ -224,7 +227,7 @@ export class SessionController {
         } else if (status.type === 'idle') {
           this.isWorking = false;
           this.workingStatus = '';
-          this.streamingParts.clear();
+          this.streamingParts = new Map();
         }
       }
     } catch (e) {
@@ -292,7 +295,7 @@ export class SessionController {
     this.sendError = null;
     this.isWorking = true;
     this.workingStatus = "Thinking...";
-    this.streamingParts.clear();
+    this.streamingParts = new Map();
 
     try {
       console.log(`[SessionController::sendMessage] - calling client.session.prompt`);
@@ -420,7 +423,7 @@ export class SessionController {
       console.log(`[SessionController::abortSession] - aborted successfully`);
       this.isWorking = false;
       this.workingStatus = "";
-      this.streamingParts.clear();
+      this.streamingParts = new Map();
       await this.load(sessionId);
       return true;
     } catch (e) {

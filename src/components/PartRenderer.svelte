@@ -8,12 +8,12 @@
   import AgentPart from './parts/AgentPart.svelte';
   import CollapsiblePart from './CollapsiblePart.svelte';
   
-  let { part, onFork = undefined } = $props();
+  let { part, onFork = undefined, showBackgroundParts = false } = $props();
   
   const showDetails = getContext('showDetails');
 </script>
 
-{#if part.type === 'text' || part.type === 'file' || showDetails?.active !== false}
+{#if part.type === 'text' || part.type === 'file' || showDetails?.active !== false || showBackgroundParts}
   <div class="part-container">
     {#if part.type === 'text' && part.synthetic}
       <SyntheticTextPart {part} />

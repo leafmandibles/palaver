@@ -15,6 +15,7 @@
   const sessionEvents = new SessionEventController();
   let events = $derived(sessionEvents.events);
   let processedEventCount = 0;
+  let sessionHistoryRefreshInFlight = false;
 
   let forceScroll = $state(false);
   let initialScrollDone = $state(false);
@@ -180,11 +181,27 @@
       processedEventCount = 0;
     }
 
+    let shouldRefreshSessionHistory = false;
+
     for (const event of records.slice(processedEventCount)) {
-      ctrl.processEvent(event.payload, params.session_id);
+      const result = ctrl.processEvent(event.payload, params.session_id);
+      if (result?.becameIdle) {
+        shouldRefreshSessionHistory = true;
+      }
     }
 
     processedEventCount = records.length;
+
+    if (shouldRefreshSessionHistory && params.session_id && !sessionHistoryRefreshInFlight) {
+      sessionHistoryRefreshInFlight = true;
+      queueMicrotask(async () => {
+        try {
+          await ctrl.load(params.session_id, true);
+        } finally {
+          sessionHistoryRefreshInFlight = false;
+        }
+      });
+    }
   });
 
   function isNearBottom() {
@@ -453,9 +470,6 @@
       {/if}
 
       {#if ctrl.isWorking}
-        {#if ctrl.streamingParts && ctrl.streamingParts.size > 0}
-          <AssistantMessage parts={Array.from(ctrl.streamingParts.values())} />
-        {/if}
         <StreamPreview status={ctrl.workingStatus} parts={Array.from(ctrl.streamingParts?.values() || [])} />
       {/if}
     </div>
